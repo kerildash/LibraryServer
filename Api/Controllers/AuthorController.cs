@@ -35,12 +35,12 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 		}
 		return Ok(author);
 	}
-	[HttpGet("by-book/{authorId}")]
+	[HttpGet("by-book/{bookId}")]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
-	public IActionResult GetByAuthorID(Guid authorId)
+	public IActionResult GetByAuthorID(Guid bookId)
 	{
-		var authors = mapper.Map<List<AuthorDto>>(repository.GetByBookId(authorId));
+		var authors = mapper.Map<List<AuthorDto>>(repository.GetByBookId(bookId));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -64,5 +64,35 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 			return StatusCode(500, ModelState);
 		}
 		return Ok("Author created");
+	}
+	[HttpPut("{authorId}")]
+	[ProducesResponseType(204)]
+	[ProducesResponseType(400)]
+	[ProducesResponseType(404)]
+	public IActionResult Update(Guid authorId, [FromBody] AuthorDto authorUpdate)
+	{
+		if (authorUpdate is null)
+		{
+			return BadRequest(ModelState);
+		}
+		if (authorId != authorUpdate.Id)
+		{
+			return BadRequest(ModelState);
+		}
+		if (!repository.Exists(authorId))
+		{
+			return NotFound();
+		}
+		if (!ModelState.IsValid)
+		{
+			return BadRequest();
+		}
+		var authorMap = mapper.Map<Author>(authorUpdate);
+		if (!repository.Update(authorMap))
+		{
+			ModelState.AddModelError("", "Error while updating");
+			return StatusCode(500, ModelState);
+		}
+		return NoContent();
 	}
 }

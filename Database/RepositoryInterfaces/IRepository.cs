@@ -12,6 +12,7 @@ namespace Database.RepositoryInterfaces
 		T? Get(Guid id);
 		ICollection<T> GetAll();
 		ICollection<T> Get(string name);
+		bool Update(T entity);
 		bool Exists(Guid id);
 		bool Save();
 	}

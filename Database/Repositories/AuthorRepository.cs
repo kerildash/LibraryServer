@@ -34,6 +34,11 @@ public class AuthorRepository(DataContext context) : IAuthorRepository
 		context.Add(author);
 		return Save();
 	}
+	public bool Update(Author author)
+	{
+		context.Update(author);
+		return Save();
+	}
 	public bool Save()
 	{
 		return (context.SaveChanges() > 0) ? true : false;
