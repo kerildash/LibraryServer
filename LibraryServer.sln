@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api\Api.csproj", "{931C314B-B340-4E68-BEF6-8D89932B092C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{931C314B-B340-4E68-BEF6-8D89932B092C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{82FA9708-BAC9-4498-A673-7BDFF98C2BE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{82FA9708-BAC9-4498-A673-7BDFF98C2BE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{B45419FB-F129-4099-AC40-3F82055FCDF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Database.csproj", "{B45419FB-F129-4099-AC40-3F82055FCDF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{A60447D2-490B-4DEC-A85F-E98036C8A238}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{B45419FB-F129-4099-AC40-3F82055FCDF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B45419FB-F129-4099-AC40-3F82055FCDF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B45419FB-F129-4099-AC40-3F82055FCDF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A60447D2-490B-4DEC-A85F-E98036C8A238}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A60447D2-490B-4DEC-A85F-E98036C8A238}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A60447D2-490B-4DEC-A85F-E98036C8A238}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A60447D2-490B-4DEC-A85F-E98036C8A238}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
