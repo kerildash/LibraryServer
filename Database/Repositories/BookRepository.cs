@@ -1,39 +1,67 @@
 ﻿using Database.RepositoryInterfaces;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Database.Repositories;
 
-public class BookRepository : IBookRepository
+public class BookRepository(DataContext context) : IBookRepository
 {
-	private readonly DataContext _context;
-	public BookRepository(DataContext context)
+	public bool Exists(Guid id)
 	{
-		_context = context;
+		return context.Books.Any(b => b.Id == id);
 	}
-	public Book Get(Guid id)
+	public Book? Get(Guid id)
 	{
-
-		return _context.Books.Where(b => b.Id == id).FirstOrDefault();
+		return context.Books
+			.Where(b => b.Id == id)
+			.FirstOrDefault();
 	}
-
-	public ICollection<Book> Get(string title)
-	{
-		return _context.Books.Where(b => b.Title.Contains(title)).ToList();
-	}
-	public ICollection<Book> Get(Author author)
-	{
-		return _context.Books.Where(b => b.BookAuthors.Any(ba => ba.Author == author)).ToList();
-	}
-
-
 	public ICollection<Book> GetAll()
 	{
-		throw new NotImplementedException();
+		return context.Books.ToList();
 	}
+	public ICollection<Book> Get(string title)
+	{
+		return context.Books
+			.Where(b => b.Title.Contains(title))
+			.ToList();
+	}
+
+	public ICollection<Book> GetByAuthorId(Guid authorId)
+	{
+		return context.BookAuthors
+			.Where(ba => ba.AuthorId == authorId)
+			.Select(ba => ba.Book)
+			.ToList();
+	}
+	public ICollection<Book> GetByTagId(Guid tagId)
+	{
+		throw new NotImplementedException();
+		//return context.BookTags
+		//	.Where(ba => ba.TagId == tagId)
+		//	.Select(ba => ba.Book)
+		//	.ToList();
+	}
+
+	public bool Create(List<Guid> authorIds, Book book)
+	{
+		foreach (var id in authorIds)
+		{
+			var author = context.Authors.Where(a => a.Id == id).FirstOrDefault();
+			var bookAuthor = new BookAuthor()
+			{
+				Book = book,
+				Author = author,
+			};
+			context.Add(bookAuthor);
+		}
+		
+		context.Add(book);
+		return Save();
+	}
+	public bool Save()
+	{
+		return context.SaveChanges() > 0 ? true : false;
+	}
+
+
 }

@@ -1,16 +1,10 @@
 ﻿using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Database.RepositoryInterfaces
+namespace Database.RepositoryInterfaces;
+
+public interface IBookRepository : IRepository<Book>
 {
-	public interface IBookRepository
-	{
-		Book Get(Guid id);
-		ICollection<Book> Get(string name);
-		ICollection<Book> GetAll();
-	}
+	ICollection<Book> GetByAuthorId(Guid authorId);
+	ICollection<Book> GetByTagId(Guid tagId);
+	bool Create(List<Guid> authorIds, Book book);
 }

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Domain.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Database.RepositoryInterfaces
+namespace Database.RepositoryInterfaces;
+
+internal interface ITagRepository : IRepository<Tag>
 {
-	internal interface ITagRepository
-	{
-	}
 }

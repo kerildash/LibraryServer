@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Models;
 
-namespace Database.RepositoryInterfaces
+namespace Database.RepositoryInterfaces;
+
+public interface IAuthorRepository : IRepository<Author>
 {
-	internal interface IAuthorRepository
-	{
-	}
+	ICollection<Author> GetByBookId(Guid bookId);
+	public bool Create(Author author);
 }
