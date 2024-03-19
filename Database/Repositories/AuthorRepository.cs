@@ -1,5 +1,6 @@
 ﻿using Database.RepositoryInterfaces;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories;
 
@@ -10,8 +11,12 @@ public class AuthorRepository(DataContext context) : IAuthorRepository
 	{
 		return context.Authors.Any(a => a.Id == id);
 	}
-	public Author? Get(Guid id)
+	public Author Get(Guid id)
 	{
+		if (!Exists(id))
+		{
+			throw new ArgumentException("Author not found");
+		}
 		return context.Authors.FirstOrDefault(a => a.Id == id);
 	}
 	public ICollection<Author> GetAll()
@@ -38,6 +43,30 @@ public class AuthorRepository(DataContext context) : IAuthorRepository
 	{
 		context.Update(author);
 		return Save();
+	}
+	public bool Delete(Guid id)
+	{
+		if (!Exists(id))
+		{
+			throw new ArgumentException($"Author ID: \"{id}\" does not exist");
+		}
+		if (context.BookAuthors.Where(ba => ba.AuthorId == id).Any())
+		{
+			throw new InvalidOperationException
+				($"Deletion not allowed: " +
+				$"there are 1 or more books related with this author." +
+				$"Delete them and try again.");
+		}
+		try
+		{
+			var author = Get(id);
+			context.Remove(author);
+			return Save();
+		}
+		catch
+		{
+			throw;
+		}
 	}
 	public bool Save()
 	{

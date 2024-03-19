@@ -1,5 +1,6 @@
 ﻿using Database.RepositoryInterfaces;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Xml.Serialization;
 
 namespace Database.Repositories;
@@ -10,11 +11,13 @@ public class BookRepository(DataContext context) : IBookRepository
 	{
 		return context.Books.Any(b => b.Id == id);
 	}
-	public Book? Get(Guid id)
+	public Book Get(Guid id)
 	{
-		return context.Books
-			.Where(b => b.Id == id)
-			.FirstOrDefault();
+		if (!Exists(id))
+		{
+			throw new ArgumentException("Book not found");
+		}
+		return context.Books.FirstOrDefault(b => b.Id == id);
 	}
 	public ICollection<Book> GetAll()
 	{
@@ -26,7 +29,6 @@ public class BookRepository(DataContext context) : IBookRepository
 			.Where(b => b.Title.Contains(title))
 			.ToList();
 	}
-
 	public ICollection<Book> GetByAuthorId(Guid authorId)
 	{
 		return context.BookAuthors
@@ -45,51 +47,113 @@ public class BookRepository(DataContext context) : IBookRepository
 
 	public bool Create(List<Guid> authorIds, Book book)
 	{
-		foreach (var id in authorIds)
+		try
 		{
-			var author = context.Authors.Where(a => a.Id == id).FirstOrDefault();
+			foreach (var id in authorIds)
+			{
+				var author = context.Authors.Where(a => a.Id == id).FirstOrDefault();
+				if (author == null)
+				{
+					throw new NullReferenceException("Author not found");
+				}
+				AddBookAuthor(book, author);
+			}
+
+			context.Add(book);
+			return Save();
+		}
+		catch
+		{
+
+			throw;
+		}
+	}
+	public bool Update(Book book)
+	{
+		try
+		{
+			context.Update(book);
+			return Save();
+		}
+		catch
+		{
+			throw;
+		}
+	}
+	public bool Save()
+	{
+		try
+		{
+			return context.SaveChanges() > 0
+				? true
+				: throw new InvalidOperationException("Nothing to save");
+		}
+		catch
+		{
+			throw;
+		}
+	}
+	public bool AddBookAuthor(Guid bookId, Guid authorId)
+	{
+		try
+		{
+
+			var author = context.Authors.Where(a => a.Id == authorId).FirstOrDefault();
 			if (author == null)
 			{
 				throw new NullReferenceException("Author not found");
 			}
-			AddBookAuthor(book, author);
+			var book = context.Books.Where(b => b.Id == bookId).FirstOrDefault();
+			if (book == null)
+			{
+				throw new NullReferenceException("Book not found");
+			}
+			return AddBookAuthor(book, author);
 		}
-
-		context.Add(book);
-		return Save();
-	}
-	public bool Update(Book book)
-	{
-		context.Update(book);
-		return Save();
-	}
-	public bool Save()
-	{
-		return context.SaveChanges() > 0 ? true : throw new Exception("Saving error");
-	}
-	public bool AddBookAuthor(Guid bookId, Guid authorId)
-	{
-		var author = context.Authors.Where(a => a.Id == authorId).FirstOrDefault();
-		if (author == null)
+		catch
 		{
-			throw new NullReferenceException("Author not found");
+			throw;
 		}
-		var book = context.Books.Where(b => b.Id == bookId).FirstOrDefault();
-		if (book == null)
-		{
-			throw new NullReferenceException("Book not found");
-		}
-		return AddBookAuthor(book, author);
 	}
 	public bool RemoveBookAuthor(Guid bookId, Guid authorId)
 	{
-		var bookAuthor = context.BookAuthors.Where(ba => ba.AuthorId == authorId && ba.BookId == bookId).FirstOrDefault();
-		if (bookAuthor is null)
+		try
 		{
-			throw new Exception($"author id:{authorId}\" is not related with book id:{bookId}");
+
+			var bookAuthor = context
+				.BookAuthors
+				.Where(ba => ba.AuthorId == authorId && ba.BookId == bookId)
+				.FirstOrDefault();
+			if (bookAuthor is null)
+			{
+				throw new Exception
+					($"author id:{authorId}\" is not related with book id:{bookId}");
+			}
+			context.BookAuthors.Remove(bookAuthor);
+			return Save();
 		}
-		context.BookAuthors.Remove(bookAuthor);
-		return Save();
+		catch
+		{
+			throw;
+		}
+	}
+	public bool Delete(Guid id)
+	{
+		if (!Exists(id))
+		{
+			throw new ArgumentException($"Book ID: \"{id}\" does not exist");
+		}
+		try
+		{
+			context.BookAuthors.Where(ba => ba.BookId == id).ExecuteDelete();
+			var book = Get(id);
+			context.Remove(book);
+			return Save();
+		}
+		catch
+		{
+			throw;
+		}
 	}
 	private bool AddBookAuthor(Book book, Author author)
 	{
@@ -100,12 +164,12 @@ public class BookRepository(DataContext context) : IBookRepository
 		};
 		if (BookAuthorExists(book.Id, author.Id))
 		{
-			throw new Exception($"author \"{author.Name}\" is already related with book \"{book.Title}\"");
+			throw new InvalidOperationException
+				($"author \"{author.Name}\" is already related with book \"{book.Title}\"");
 		}
 		context.Add(bookAuthor);
 		return Save();
 	}
-
 	private bool BookAuthorExists(Guid bookId, Guid authorId)
 	{
 		return context.BookAuthors.Any(ba => ba.AuthorId == authorId && ba.BookId == bookId);

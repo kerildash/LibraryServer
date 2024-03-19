@@ -85,7 +85,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 		}
 		if (!ModelState.IsValid)
 		{
-			return BadRequest();
+			return BadRequest(ModelState);
 		}
 		var authorMap = mapper.Map<Author>(authorUpdate);
 		if (!repository.Update(authorMap))
@@ -94,5 +94,33 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 			return StatusCode(500, ModelState);
 		}
 		return NoContent();
+	}
+
+	[HttpDelete("{authorId}")]
+	public IActionResult Delete(Guid authorId)
+	{
+		if (!repository.Exists(authorId))
+		{
+			return NotFound();
+		}
+		if (!ModelState.IsValid)
+		{
+			return BadRequest();
+		}
+		try
+		{
+			repository.Delete(authorId);
+			return NoContent();
+		}
+		catch (ArgumentException ex)
+		{
+			ModelState.AddModelError("", ex.Message);
+			return NotFound(ModelState);
+		}
+		catch (Exception ex)
+		{
+			ModelState.AddModelError("", ex.Message);
+			return StatusCode(500, ModelState);
+		}
 	}
 }

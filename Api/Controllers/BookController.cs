@@ -121,10 +121,15 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 			repository.AddBookAuthor(bookId, authorId);
 			return NoContent();
 		}
-		catch (Exception ex)
+		catch (InvalidOperationException ex)
 		{
 			ModelState.AddModelError("", ex.Message);
 			return StatusCode(400, ModelState);
+		}
+		catch (Exception ex)
+		{
+			ModelState.AddModelError("", ex.Message);
+			return StatusCode(500, ModelState);
 		}
 	}
 
@@ -139,10 +144,15 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 			repository.RemoveBookAuthor(bookId, authorId);
 			return NoContent();
 		}
-		catch (Exception ex)
+		catch (InvalidOperationException ex)
 		{
 			ModelState.AddModelError("", ex.Message);
 			return StatusCode(400, ModelState);
+		}
+		catch (Exception ex)
+		{
+			ModelState.AddModelError("", ex.Message);
+			return StatusCode(500, ModelState);
 		}
 	}
 }

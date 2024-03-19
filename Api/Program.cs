@@ -53,6 +53,7 @@ public class Program
 		app.UseHttpsRedirection();
 
 		app.UseAuthorization();
+		app.UseStaticFiles();
 
 
 		app.MapControllers();
@@ -64,6 +65,7 @@ public class Program
 	{
 		builder.Services.AddScoped<IBookRepository, BookRepository>();
 		builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+		builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 	}
 
 	private static void SeedData(IHost app)

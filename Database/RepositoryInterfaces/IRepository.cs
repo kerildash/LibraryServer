@@ -9,9 +9,10 @@ namespace Database.RepositoryInterfaces
 {
 	public interface IRepository<T>
 	{
-		T? Get(Guid id);
+		T Get(Guid id);
 		ICollection<T> GetAll();
 		ICollection<T> Get(string name);
+		bool Delete(Guid id);
 		bool Update(T entity);
 		bool Exists(Guid id);
 		bool Save();
