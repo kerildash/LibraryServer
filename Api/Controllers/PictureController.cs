@@ -28,16 +28,18 @@ public class PictureController(IPictureRepository repository, IMapper mapper, IW
 		}
 		string name = HandleName(pictureCreate.FileName);
 		string path = "/Files/" + name;
+		string extension = GetExtension(pictureCreate);
 
 		using (var fileStream = new FileStream(environment.WebRootPath + path, FileMode.Create))
 		{
 			await pictureCreate.CopyToAsync(fileStream);
 		}
-		var picture = new StaticFile()
+		var picture = new Picture()
 		{
 			Id = Guid.NewGuid(),
 			Name = name,
-			Path = path
+			Path = path,
+			Extension = extension
 		};
 
 		var isCreated = repository.Create(picture);
@@ -94,15 +96,19 @@ public class PictureController(IPictureRepository repository, IMapper mapper, IW
 	private bool IsValidExtension(IFormFile file)
 	{
 		List<string> extensions = [
-			"jpg",
-			"jpeg",
-			"png",
+			".jpg",
+			".jpeg",
+			".png",
 		];
-		string extension = Path.GetExtension(file.Name).Trim().ToLower();
+		string extension = GetExtension(file);
 		if (extensions.Contains(extension))
 		{
 			return true;
 		}
 		return false;
+	}
+	private string GetExtension(IFormFile file)
+	{
+		return Path.GetExtension(file.FileName).Trim().ToLower();
 	}
 }

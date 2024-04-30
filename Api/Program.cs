@@ -22,6 +22,7 @@ public class Program
 		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen();
+		builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 500 * 1024 * 1024);
 
 		#region AddDbContext
 		builder.Services.AddDbContext<DataContext>(
@@ -66,6 +67,8 @@ public class Program
 		builder.Services.AddScoped<IBookRepository, BookRepository>();
 		builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 		builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+		builder.Services.AddScoped<IPictureRepository, PictureRepository>();
+		builder.Services.AddScoped<ITagRepository, TagRepository>();
 	}
 
 	private static void SeedData(IHost app)

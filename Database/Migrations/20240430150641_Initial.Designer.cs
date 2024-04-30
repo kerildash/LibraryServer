@@ -4,6 +4,7 @@ using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240430150641_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,6 +104,7 @@ namespace Database.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("HolderId")
+                        .IsRequired()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -114,8 +118,7 @@ namespace Database.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("HolderId")
-                        .IsUnique()
-                        .HasFilter("[HolderId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Documents");
                 });
@@ -131,6 +134,7 @@ namespace Database.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("HolderId")
+                        .IsRequired()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -144,8 +148,7 @@ namespace Database.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("HolderId")
-                        .IsUnique()
-                        .HasFilter("[HolderId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Pictures");
                 });
@@ -207,14 +210,18 @@ namespace Database.Migrations
                 {
                     b.HasOne("Domain.Models.Book", null)
                         .WithOne("Document")
-                        .HasForeignKey("Domain.Models.Document", "HolderId");
+                        .HasForeignKey("Domain.Models.Document", "HolderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Models.Picture", b =>
                 {
                     b.HasOne("Domain.Models.Book", null)
                         .WithOne("Cover")
-                        .HasForeignKey("Domain.Models.Picture", "HolderId");
+                        .HasForeignKey("Domain.Models.Picture", "HolderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Models.Author", b =>

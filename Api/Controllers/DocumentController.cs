@@ -29,16 +29,18 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 		}
 		string name = HandleName(documentCreate.FileName);
 		string path = "/Files/" + name;
-
+		string extension = GetExtension(documentCreate);
 		using (var fileStream = new FileStream(environment.WebRootPath + path, FileMode.Create))
 		{
 			await documentCreate.CopyToAsync(fileStream);
 		}
-		var document = new StaticFile()
+		var document = new Document()
 		{
 			Id = Guid.NewGuid(),
 			Name = name,
-			Path = path
+			Path = path,
+			Extension = extension,
+			
 		};
 
 		var isCreated = repository.Create(document);
@@ -95,17 +97,21 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 	private bool IsValidExtension(IFormFile file)
 	{
 		List<string> extensions = [
-			"pdf",
-			"epub",
-			"fb2",
-			"mobi",
-			"djvu",
-			"docx"];
-		string extension = Path.GetExtension(file.Name).Trim().ToLower();
+			".pdf",
+			".epub",
+			".fb2",
+			".mobi",
+			".djvu",
+			".docx"];
+		string extension = GetExtension(file);
 		if (extensions.Contains(extension))
 		{
 			return true;
 		}
 		return false;
+	}
+	private string GetExtension(IFormFile file)
+	{
+		return Path.GetExtension(file.FileName).Trim().ToLower();
 	}
 }

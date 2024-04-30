@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Database.RepositoryInterfaces;
 
-internal interface ITagRepository : IRepository<Tag>
+public interface ITagRepository : IRepository<Tag>
 {
+	public ICollection<Tag> GetByBookId(Guid bookId);
+	public bool Create(Tag tag);
 }

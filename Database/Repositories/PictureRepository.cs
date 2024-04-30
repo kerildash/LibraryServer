@@ -12,7 +12,7 @@ namespace Database.Repositories
 	{
 		public bool Exists(Guid id)
 		{
-			return context.Documents.Any(a => a.Id == id);
+			return context.Pictures.Any(a => a.Id == id);
 		}
 		public StaticFile Get(Guid id)
 		{
@@ -20,7 +20,7 @@ namespace Database.Repositories
 			{
 				throw new ArgumentException("Document not found");
 			}
-			return context.Documents.FirstOrDefault(d => d.Id == id);
+			return context.Pictures.FirstOrDefault(d => d.Id == id);
 		}
 		public ICollection<StaticFile> Get(string name)
 		{
@@ -28,15 +28,15 @@ namespace Database.Repositories
 		}
 		public ICollection<StaticFile> GetAll()
 		{
-			return (ICollection<StaticFile>)context.Documents.ToList();
+			return (ICollection<StaticFile>)context.Pictures.ToList();
 		}
 		public ICollection<StaticFile> GetByHolderId(Guid parentId)
 		{
-			return (ICollection<StaticFile>)context.Documents.Where(d => d.HolderId == parentId).ToList();
+			return (ICollection<StaticFile>)context.Pictures.Where(d => d.HolderId == parentId).ToList();
 		}
-		public bool Create(StaticFile document)
+		public bool Create(StaticFile picture)
 		{
-			context.Add(document);
+			context.Add(picture);
 			return Save();
 		}
 
