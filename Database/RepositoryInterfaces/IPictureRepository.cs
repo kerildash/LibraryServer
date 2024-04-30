@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Database.RepositoryInterfaces
 {
-	public interface IDocumentRepository : IStaticFileRepository
+	public interface IPictureRepository : IStaticFileRepository
 	{
 	}
 }

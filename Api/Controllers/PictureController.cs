@@ -6,48 +6,47 @@ using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
 //using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
-
 namespace Api.Controllers;
 
 [Route("api/[controller]s")]
 [ApiController]
-public class DocumentController(IDocumentRepository repository, IMapper mapper, IWebHostEnvironment environment) : ControllerBase
+public class PictureController(IPictureRepository repository, IMapper mapper, IWebHostEnvironment environment) : ControllerBase
 {
 	[HttpPost]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
-	public async Task<IActionResult> Create(IFormFile documentCreate)
+	public async Task<IActionResult> Create(IFormFile pictureCreate)
 	{
-		if (documentCreate is null)
+		if (pictureCreate is null)
 		{
 			return BadRequest(ModelState);
 		}
-		if (!IsValidExtension(documentCreate))
+		if (!IsValidExtension(pictureCreate))
 		{
 			ModelState.AddModelError("", "Wrong file type. File can not be uploaded.");
 			return BadRequest(ModelState);
 		}
-		string name = HandleName(documentCreate.FileName);
+		string name = HandleName(pictureCreate.FileName);
 		string path = "/Files/" + name;
 
 		using (var fileStream = new FileStream(environment.WebRootPath + path, FileMode.Create))
 		{
-			await documentCreate.CopyToAsync(fileStream);
+			await pictureCreate.CopyToAsync(fileStream);
 		}
-		var document = new StaticFile()
+		var picture = new StaticFile()
 		{
 			Id = Guid.NewGuid(),
 			Name = name,
 			Path = path
 		};
 
-		var isCreated = repository.Create(document);
+		var isCreated = repository.Create(picture);
 		if (!isCreated)
 		{
 			ModelState.AddModelError("", "Error while saving");
 			return StatusCode(500, ModelState);
 		}
-		return Ok(document.Id);
+		return Ok(picture.Id);
 	}
 
 
@@ -95,12 +94,10 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 	private bool IsValidExtension(IFormFile file)
 	{
 		List<string> extensions = [
-			"pdf",
-			"epub",
-			"fb2",
-			"mobi",
-			"djvu",
-			"docx"];
+			"jpg",
+			"jpeg",
+			"png",
+		];
 		string extension = Path.GetExtension(file.Name).Trim().ToLower();
 		if (extensions.Contains(extension))
 		{

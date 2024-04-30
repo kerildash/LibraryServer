@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Database.RepositoryInterfaces;
+using Domain.Models;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Database.RepositoryInterfaces;
-using Domain.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories
 {
-	public class DocumentRepository(DataContext context) : IDocumentRepository
+	public class PictureRepository(DataContext context) : IPictureRepository
 	{
 		public bool Exists(Guid id)
 		{
@@ -32,9 +30,9 @@ namespace Database.Repositories
 		{
 			return (ICollection<StaticFile>)context.Documents.ToList();
 		}
-		public ICollection<StaticFile> GetByHolderId(Guid HolderId)
+		public ICollection<StaticFile> GetByHolderId(Guid parentId)
 		{
-			return (ICollection<StaticFile>)context.Documents.Where(d => d.HolderId == HolderId).ToList();
+			return (ICollection<StaticFile>)context.Documents.Where(d => d.HolderId == parentId).ToList();
 		}
 		public bool Create(StaticFile document)
 		{
@@ -47,9 +45,6 @@ namespace Database.Repositories
 			throw new NotImplementedException();
 		}
 
-		
-
-		
 		public bool Save()
 		{
 			try
