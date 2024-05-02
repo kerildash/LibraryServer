@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Database.csproj", "{B45419FB-F129-4099-AC40-3F82055FCDF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{A60447D2-490B-4DEC-A85F-E98036C8A238}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{A60447D2-490B-4DEC-A85F-E98036C8A238}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

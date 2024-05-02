@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Database.RepositoryInterfaces;
 using Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
@@ -14,6 +15,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[HttpGet]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "User")]
 	public IActionResult Get()
 	{
 		var authors = mapper.Map<List<AuthorDto>>(repository.GetAll());
@@ -26,6 +28,8 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[HttpGet("id/{id}")]
 	[ProducesResponseType(200, Type = typeof(AuthorDto))]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "User")]
+
 	public IActionResult Get(Guid id)
 	{
 		var author = mapper.Map<AuthorDto>(repository.Get(id));
@@ -38,6 +42,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[HttpGet("by-book/{bookId}")]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "User")]
 	public IActionResult GetByAuthorID(Guid bookId)
 	{
 		var authors = mapper.Map<List<AuthorDto>>(repository.GetByBookId(bookId));
@@ -47,9 +52,11 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 		}
 		return Ok(authors);
 	}
+
 	[HttpPost]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "Admin")]
 	public IActionResult Create([FromBody] AuthorDto authorCreate)
 	{
 		if (authorCreate is null)
@@ -65,10 +72,12 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 		}
 		return Ok("Author created");
 	}
+
 	[HttpPut("{authorId}")]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
+	[Authorize(Roles = "Admin")]
 	public IActionResult Update(Guid authorId, [FromBody] AuthorDto authorUpdate)
 	{
 		if (authorUpdate is null)
@@ -97,6 +106,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	}
 
 	[HttpDelete("{authorId}")]
+	[Authorize(Roles = "Admin")]
 	public IActionResult Delete(Guid authorId)
 	{
 		if (!repository.Exists(authorId))

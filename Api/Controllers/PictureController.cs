@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Database.RepositoryInterfaces;
 using Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
@@ -15,6 +16,7 @@ public class PictureController(IPictureRepository repository, IMapper mapper, IW
 	[HttpPost]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "Admin")]
 	public async Task<IActionResult> Create(IFormFile pictureCreate)
 	{
 		if (pictureCreate is null)
@@ -53,6 +55,7 @@ public class PictureController(IPictureRepository repository, IMapper mapper, IW
 
 
 	[HttpGet("id/{id}")]
+	[Authorize(Roles = "User")]
 	public IActionResult Get(Guid id)
 	{
 		var document = repository.Get(id);
@@ -67,7 +70,8 @@ public class PictureController(IPictureRepository repository, IMapper mapper, IW
 
 	[HttpGet("by-book/{parentId}")]
 	[HttpGet("by-author/{parentId}")]
-	public IActionResult GetByParentId(Guid parentId)
+	[Authorize(Roles = "User")]
+	public IActionResult GetByHolderId(Guid parentId)
 	{
 		var documents = repository.GetByHolderId(parentId);
 		var files = documents.Select(GetFile).ToList();

@@ -4,6 +4,7 @@ using Domain.Models;
 using Shared.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Controllers;
 
@@ -14,6 +15,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[HttpGet]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<BookDto>))]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "User")]
 	public IActionResult Get()
 	{
 		var books = mapper.Map<List<BookDto>>(repository.GetAll());
@@ -26,6 +28,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[HttpGet("id/{id}")]
 	[ProducesResponseType(200, Type = typeof(BookDto))]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "User")]
 	public IActionResult Get(Guid id)
 	{
 		var book = mapper.Map<BookDto>(repository.Get(id));
@@ -39,6 +42,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[HttpGet("by-author/{authorId}")]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<BookDto>))]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "User")]
 	public IActionResult GetByAuthorID(Guid authorId)
 	{
 		var books = mapper.Map<List<BookDto>>(repository.GetByAuthorId(authorId));
@@ -52,6 +56,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[HttpPost]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "Admin")]
 	public IActionResult Create([FromQuery] List<Guid> authorIds, [FromBody] BookDto bookCreate)
 	{
 		try
@@ -80,6 +85,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
+	[Authorize(Roles = "Admin")]
 	public IActionResult Update(Guid bookId, [FromBody] BookDto bookUpdate)
 	{
 		if (bookUpdate is null)
@@ -110,6 +116,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
+	[Authorize(Roles = "Admin")]
 	public IActionResult AddAuthor(Guid bookId, Guid authorId)
 	{
 		try
@@ -137,6 +144,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
+	[Authorize(Roles = "Admin")]
 	public IActionResult RemoveAuthor(Guid bookId, Guid authorId)
 	{
 		try

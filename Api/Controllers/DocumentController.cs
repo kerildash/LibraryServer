@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Database.RepositoryInterfaces;
 using Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dto;
@@ -16,6 +17,7 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 	[HttpPost]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
+	[Authorize(Roles = "Admin")]
 	public async Task<IActionResult> Create(IFormFile documentCreate)
 	{
 		if (documentCreate is null)
@@ -54,6 +56,7 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 
 
 	[HttpGet("id/{id}")]
+	[Authorize(Roles = "User")]
 	public IActionResult Get(Guid id)
 	{
 		var document = repository.Get(id);
@@ -68,6 +71,7 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 
 	[HttpGet("by-book/{parentId}")]
 	[HttpGet("by-author/{parentId}")]
+	[Authorize(Roles = "User")]
 	public IActionResult GetByParentId(Guid parentId)
 	{
 		var documents = repository.GetByHolderId(parentId);

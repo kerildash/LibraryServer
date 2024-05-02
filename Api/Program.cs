@@ -4,6 +4,8 @@ using Database.Repositories;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Shared.Helper;
+using Microsoft.AspNetCore.Identity;
+using Domain.Models;
 
 namespace Api;
 
@@ -17,6 +19,8 @@ public class Program
 		
 
 		builder.Services.AddControllers();
+		builder.Services.AddAuthentication();
+		builder.Services.AddAuthorization();
 		builder.Services.AddTransient<Seed>();
 		builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(MappingProfiles).Assembly);
 		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -30,9 +34,26 @@ public class Program
 			options.UseSqlServer(
 				builder.Configuration.GetConnectionString("DefaultConnection"),
 				x => x.MigrationsAssembly(typeof(DataContext).Assembly.FullName)
-				)
+			)
 		);
 		#endregion
+
+		builder.Services.AddIdentity<AppUser, IdentityRole>(
+			options =>
+			{
+				options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ ";
+			})
+			.AddEntityFrameworkStores<DataContext>()
+			.AddDefaultTokenProviders();
+
+		builder.Services.Configure<IdentityOptions>(options =>
+		{
+			options.Password.RequireDigit = true;
+			options.Password.RequiredLength = 8;
+			options.Password.RequireLowercase = true;
+			options.Password.RequireNonAlphanumeric = false;
+			options.Password.RequireUppercase = true;
+		});
 
 		builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
@@ -53,6 +74,7 @@ public class Program
 
 		app.UseHttpsRedirection();
 
+		app.UseAuthentication();
 		app.UseAuthorization();
 		app.UseStaticFiles();
 

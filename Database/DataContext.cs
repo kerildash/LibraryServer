@@ -1,4 +1,6 @@
 ﻿using Domain.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Database;
 
-public class DataContext : DbContext
+public class DataContext : IdentityDbContext<AppUser>
 {
 	public DataContext(DbContextOptions<DataContext> options) : base(options)
 	{
@@ -23,6 +25,8 @@ public class DataContext : DbContext
 	public DbSet<BookTag> BookTags { get; set; }
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
+		base.OnModelCreating(modelBuilder);
+
 		modelBuilder.Entity<BookTag>()
 			.HasKey(bt => new { bt.BookId, bt.TagId });
 
