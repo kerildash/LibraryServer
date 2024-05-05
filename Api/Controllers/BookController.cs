@@ -3,8 +3,8 @@ using Database.RepositoryInterfaces;
 using Domain.Models;
 using Shared.Helper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Dto;
 using Microsoft.AspNetCore.Authorization;
+using Shared.Dto.Domain;
 
 namespace Api.Controllers;
 

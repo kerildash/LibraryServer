@@ -1,6 +1,9 @@
-﻿using Domain.Models;
+﻿using Api.Services;
+using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Shared.Dto.Account;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using static System.Reflection.Metadata.BlobBuilder;
@@ -12,14 +15,12 @@ namespace Api.Controllers;
 public class AccountController(
 	UserManager<AppUser> userManager,
 	SignInManager<AppUser> signInManager,
-	RoleManager<IdentityRole> roleManager) 
+	RoleManager<IdentityRole> roleManager,
+	ITokenService tokenService) 
 	: Controller
 {
 	[HttpPost("register")]
-	public async Task<IActionResult> Register(
-		[EmailAddress] string email,
-		string userName,
-		[MinLength(8)] string password, string confirmPassword)
+	public async Task<IActionResult> Register([FromBody] RegisterDto register)
 	{
 		//populating the db with roles
 		//could be in seed data?
@@ -37,16 +38,22 @@ public class AccountController(
 		}
 		var user = new AppUser
 		{
-			Email = email,
-			UserName = userName
+			Email = register.Email,
+			UserName = register.UserName
 		};
-		var result = await userManager.CreateAsync(user, password);
+		var result = await userManager.CreateAsync(user, register.Password);
 		
 		if (result.Succeeded)
 		{
 			await userManager.AddToRoleAsync(user, "User");
 			await signInManager.SignInAsync(user, isPersistent: false);
-			return Ok($"user {user.UserName} created in a role of User");
+			var roles = await userManager.GetRolesAsync(user);
+			return Ok(new UserResponse
+			{
+				UserName = user.UserName,
+				Email = user.Email,
+				Token = tokenService.CreateToken(user, roles)
+			});
 		}
 		ModelState.AddModelError("", "User could not be created");
 		return BadRequest(ModelState);
@@ -54,17 +61,27 @@ public class AccountController(
 
 	[HttpPost("login")]
 	public async Task<IActionResult> Login(
-		string userName,
-		[MinLength(8)] string password)
+		[FromBody] LoginDto login)
 	{
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
 		}
-		var result = await signInManager.PasswordSignInAsync(userName, password, true, false);
+		var user = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == login.UserName);
+		if (user == null)
+		{
+			return Unauthorized("User not found");
+		}
+		var result = await signInManager.PasswordSignInAsync(user, login.Password, true, false);
+		var roles = await userManager.GetRolesAsync(user);
 		if (result.Succeeded)
 		{
-			return Ok();
+			return Ok(new UserResponse
+			{
+				UserName = user.UserName,
+				Email = user.Email,
+				Token = tokenService.CreateToken(user, roles)
+			});
 		}
 		ModelState.AddModelError("", "Invalid email or password");
 		return BadRequest(ModelState);

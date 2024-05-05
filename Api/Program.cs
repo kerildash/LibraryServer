@@ -6,6 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Helper;
 using Microsoft.AspNetCore.Identity;
 using Domain.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Api.Services;
 
 namespace Api;
 
@@ -16,11 +20,49 @@ public class Program
 		var builder = WebApplication.CreateBuilder(args);
 
 		AddRepositories(builder);
-		
+		AddServices(builder);
 
 		builder.Services.AddControllers();
-		builder.Services.AddAuthentication();
-		builder.Services.AddAuthorization();
+		builder.Services.AddIdentity<AppUser, IdentityRole>(
+			options =>
+			{
+				options.User.AllowedUserNameCharacters =
+					"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ ";
+			})
+			.AddEntityFrameworkStores<DataContext>();
+		builder.Services.AddAuthentication(options =>
+		{
+			options.DefaultAuthenticateScheme =
+		    options.DefaultChallengeScheme =
+			options.DefaultForbidScheme =
+		    options.DefaultScheme =
+		    options.DefaultSignInScheme =
+		    options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+		})
+			.AddJwtBearer(options =>
+			{
+				options.TokenValidationParameters = new TokenValidationParameters
+				{
+					// validate the token based on the key we have provided 
+					ValidateIssuerSigningKey = false,
+
+					IssuerSigningKey =
+						new SymmetricSecurityKey(
+							Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY"))),
+
+					// validate the issuer 
+					ValidIssuer = builder.Configuration["JWT:Issuer"],
+					ValidateIssuer = false,
+
+					// validate the audience (angular side)
+					ValidateAudience = false,
+					ValidAudience = builder.Configuration["JWT:Audience"],
+
+					ValidateLifetime = false
+				};
+
+			});
+
 		builder.Services.AddTransient<Seed>();
 		builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(MappingProfiles).Assembly);
 		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -43,15 +85,9 @@ public class Program
 		);
 		#endregion
 
-		builder.Services.AddIdentity<AppUser, IdentityRole>(
-			options =>
-			{
-				options.User.AllowedUserNameCharacters = 
-					"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ ";
-			})
-			.AddEntityFrameworkStores<DataContext>()
-			.AddDefaultTokenProviders();
-
+		
+		//.AddDefaultTokenProviders();
+		//builder.Services.AddAuthorization();
 		builder.Services.Configure<IdentityOptions>(options =>
 		{
 			options.Password.RequireDigit = true;
@@ -65,9 +101,9 @@ public class Program
 
 		var app = builder.Build();
 
-		# region seeding the data
+		#region seeding the data
 		if (args.Length == 1 && args[0].ToLower() == "seeddata")
-			SeedData(app);		
+			SeedData(app);
 		#endregion
 
 
@@ -77,6 +113,7 @@ public class Program
 			app.UseSwagger();
 			app.UseSwaggerUI();
 		}
+		 
 		app.UseCors("Origins");
 		app.UseHttpsRedirection();
 
@@ -98,6 +135,11 @@ public class Program
 		builder.Services.AddScoped<IPictureRepository, PictureRepository>();
 		builder.Services.AddScoped<ITagRepository, TagRepository>();
 	}
+	private static void AddServices(WebApplicationBuilder builder)
+	{
+		builder.Services.AddScoped<ITokenService, TokenService>();
+	}
+
 
 	private static void SeedData(IHost app)
 	{

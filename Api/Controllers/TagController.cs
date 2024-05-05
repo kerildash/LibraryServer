@@ -3,7 +3,7 @@ using Database.RepositoryInterfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Dto;
+using Shared.Dto.Domain;
 
 namespace Api.Controllers;
 

@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using Database.RepositoryInterfaces;
 using Domain.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Dto;
+using Shared.Dto.Domain;
 
 namespace Api.Controllers;
 
@@ -15,7 +16,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[HttpGet]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
-	//[Authorize(Roles = "User")]
+	[Authorize(Roles="User", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 	public async Task<IActionResult> Get()
 	{
 		var authors = mapper.Map<List<AuthorDto>>(await repository.GetAll());
@@ -30,9 +31,9 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User")]
 
-	public IActionResult Get(Guid id)
+	public async Task<IActionResult> Get(Guid id)
 	{
-		var author = mapper.Map<AuthorDto>(repository.Get(id));
+		var author = mapper.Map<AuthorDto>(await repository.Get(id));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -43,9 +44,9 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User")]
-	public IActionResult GetByAuthorID(Guid bookId)
+	public async Task<IActionResult> GetByAuthorID(Guid bookId)
 	{
-		var authors = mapper.Map<List<AuthorDto>>(repository.GetByBookId(bookId));
+		var authors = mapper.Map<List<AuthorDto>>(await repository.GetByBookId(bookId));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -56,7 +57,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[HttpPost]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
-	//[Authorize(Roles = "Admin")]
+	[Authorize(Roles = "Admin")]
 	public async Task<IActionResult> Create([FromBody] AuthorDto authorCreate)
 	{
 		if (authorCreate is null)

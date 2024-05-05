@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Models;
-using Shared.Dto;
+using Shared.Dto.Domain;
 
 namespace Shared.Helper;
 

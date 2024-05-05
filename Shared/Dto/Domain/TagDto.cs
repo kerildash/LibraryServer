@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Dto;
+namespace Shared.Dto.Domain;
 
 public class TagDto
 {
-	public Guid Id { get; set; }
-	public string Name { get; set; }
+    public Guid Id { get; set; }
+    public string Name { get; set; }
 }
