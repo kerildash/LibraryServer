@@ -44,7 +44,7 @@ public class PictureController(IPictureRepository repository, IMapper mapper, IW
 			Extension = extension
 		};
 
-		var isCreated = repository.Create(picture);
+		var isCreated = await repository.Create(picture);
 		if (!isCreated)
 		{
 			ModelState.AddModelError("", "Error while saving");
@@ -56,9 +56,9 @@ public class PictureController(IPictureRepository repository, IMapper mapper, IW
 
 	[HttpGet("id/{id}")]
 	[Authorize(Roles = "User")]
-	public IActionResult Get(Guid id)
+	public async Task<IActionResult> Get(Guid id)
 	{
-		var document = repository.Get(id);
+		var document = await repository.Get(id);
 		var file = GetFile(document);
 		if (!ModelState.IsValid)
 		{
@@ -71,9 +71,9 @@ public class PictureController(IPictureRepository repository, IMapper mapper, IW
 	[HttpGet("by-book/{parentId}")]
 	[HttpGet("by-author/{parentId}")]
 	[Authorize(Roles = "User")]
-	public IActionResult GetByHolderId(Guid parentId)
+	public async Task<IActionResult> GetByHolderId(Guid parentId)
 	{
-		var documents = repository.GetByHolderId(parentId);
+		var documents = await repository.GetByHolderId(parentId);
 		var files = documents.Select(GetFile).ToList();
 		return Ok(files);
 	}

@@ -45,7 +45,7 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 			
 		};
 
-		var isCreated = repository.Create(document);
+		var isCreated = await repository.Create(document);
 		if (!isCreated)
 		{
 			ModelState.AddModelError("", "Error while saving");
@@ -57,9 +57,9 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 
 	[HttpGet("id/{id}")]
 	[Authorize(Roles = "User")]
-	public IActionResult Get(Guid id)
+	public async Task<IActionResult> Get(Guid id)
 	{
-		var document = repository.Get(id);
+		var document = await repository.Get(id);
 		var file = GetFile(document);
 		if (!ModelState.IsValid)
 		{
@@ -72,9 +72,9 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 	[HttpGet("by-book/{parentId}")]
 	[HttpGet("by-author/{parentId}")]
 	[Authorize(Roles = "User")]
-	public IActionResult GetByParentId(Guid parentId)
+	public async Task<IActionResult> GetByParentId(Guid parentId)
 	{
-		var documents = repository.GetByHolderId(parentId);
+		var documents = await repository.GetByHolderId(parentId);
 		var files = documents.Select(GetFile).ToList();
 		return Ok(files);
 	}

@@ -12,37 +12,38 @@ namespace Database.Repositories
 {
 	public class DocumentRepository(DataContext context) : IDocumentRepository
 	{
-		public bool Exists(Guid id)
+		public async Task<bool> Exists(Guid id)
 		{
-			return context.Documents.Any(a => a.Id == id);
+			return await context.Documents.AnyAsync(a => a.Id == id);
 		}
-		public StaticFile Get(Guid id)
+		public async Task<StaticFile> Get(Guid id)
 		{
-			if (!Exists(id))
+			if (!await Exists(id))
 			{
 				throw new ArgumentException("Document not found");
 			}
-			return context.Documents.FirstOrDefault(d => d.Id == id);
+			return await context.Documents.FirstOrDefaultAsync(d => d.Id == id) ?? throw new NullReferenceException();
 		}
-		public ICollection<StaticFile> Get(string name)
+
+		public async Task<ICollection<StaticFile>> Get(string name)
 		{
 			throw new NotImplementedException();
 		}
-		public ICollection<StaticFile> GetAll()
+		public async Task<ICollection<StaticFile>> GetAll()
 		{
-			return (ICollection<StaticFile>)context.Documents.ToList();
+			return (ICollection<StaticFile>)await context.Documents.ToListAsync();
 		}
-		public ICollection<StaticFile> GetByHolderId(Guid HolderId)
+		public async Task<ICollection<StaticFile>> GetByHolderId(Guid HolderId)
 		{
-			return (ICollection<StaticFile>)context.Documents.Where(d => d.HolderId == HolderId).ToList();
+			return (ICollection<StaticFile>)await context.Documents.Where(d => d.HolderId == HolderId).ToListAsync();
 		}
-		public bool Create(StaticFile document)
+		public async Task<bool> Create(StaticFile document)
 		{
-			context.Add(document);
-			return Save();
+			await context.AddAsync(document);
+			return await Save();
 		}
 
-		public bool Delete(Guid id)
+		public async Task<bool> Delete(Guid id)
 		{
 			throw new NotImplementedException();
 		}
@@ -50,11 +51,11 @@ namespace Database.Repositories
 		
 
 		
-		public bool Save()
+		public async Task<bool> Save()
 		{
 			try
 			{
-				return context.SaveChanges() > 0
+				return await context.SaveChangesAsync() > 0
 					? true
 					: throw new InvalidOperationException("Nothing to save");
 			}
@@ -64,7 +65,7 @@ namespace Database.Repositories
 			}
 		}
 
-		public bool Update(StaticFile entity)
+		public async Task<bool> Update(StaticFile entity)
 		{
 			throw new NotImplementedException();
 		}

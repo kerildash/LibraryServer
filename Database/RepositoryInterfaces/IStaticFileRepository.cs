@@ -9,7 +9,7 @@ namespace Database.RepositoryInterfaces
 {
 	public interface IStaticFileRepository : IRepository<StaticFile>
 	{
-		ICollection<StaticFile> GetByHolderId(Guid parentId);
-		bool Create(StaticFile document);
+		Task<ICollection<StaticFile>> GetByHolderId(Guid parentId);
+		Task<bool> Create(StaticFile document);
 	}
 }

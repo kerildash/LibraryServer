@@ -26,6 +26,11 @@ public class Program
 		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen();
+		builder.Services.AddCors(options => options.AddPolicy(name: "Origins",
+			policy =>
+			{
+				policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
+			}));
 		builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 500 * 1024 * 1024);
 
 		#region AddDbContext
@@ -41,7 +46,8 @@ public class Program
 		builder.Services.AddIdentity<AppUser, IdentityRole>(
 			options =>
 			{
-				options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ ";
+				options.User.AllowedUserNameCharacters = 
+					"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ ";
 			})
 			.AddEntityFrameworkStores<DataContext>()
 			.AddDefaultTokenProviders();
@@ -71,7 +77,7 @@ public class Program
 			app.UseSwagger();
 			app.UseSwaggerUI();
 		}
-
+		app.UseCors("Origins");
 		app.UseHttpsRedirection();
 
 		app.UseAuthentication();
@@ -95,11 +101,11 @@ public class Program
 
 	private static void SeedData(IHost app)
 	{
-		var scopedFactory = app.Services.GetService<IServiceScopeFactory>();
+		var scopedFactory = app.Services.GetService<IServiceScopeFactory>() ?? throw new NullReferenceException();
 
 		using (var scope = scopedFactory.CreateScope())
 		{
-			var service = scope.ServiceProvider.GetService<Seed>();
+			var service = scope.ServiceProvider.GetService<Seed>() ?? throw new NullReferenceException();
 			service.SeedDataContext();
 		}
 	}

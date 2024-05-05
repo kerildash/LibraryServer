@@ -1,55 +1,56 @@
 ﻿using Database.RepositoryInterfaces;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories;
 
 public class TagRepository(DataContext context) : ITagRepository
 {
 
-	public bool Exists(Guid id)
+	public async Task<bool> Exists(Guid id)
 	{
-		return context.Tags.Any(a => a.Id == id);
+		return await context.Tags.AnyAsync(a => a.Id == id);
 	}
-	public Tag Get(Guid id)
+	public async Task<Tag> Get(Guid id)
 	{
-		if (!Exists(id))
+		if (!await Exists(id))
 		{
 			throw new ArgumentException("Tag not found");
 		}
-		return context.Tags.FirstOrDefault(a => a.Id == id);
+		return await context.Tags.FirstOrDefaultAsync(a => a.Id == id) ?? throw new NullReferenceException();
 	}
-	public ICollection<Tag> GetAll()
+	public async Task<ICollection<Tag>> GetAll()
 	{
-		return context.Tags.ToList();
+		return await context.Tags.ToListAsync();
 	}
-	public ICollection<Tag> Get(string name)
+	public async Task<ICollection<Tag>> Get(string name)
 	{
 		throw new NotImplementedException();
 	}
-	public ICollection<Tag> GetByBookId(Guid bookId)
+	public async Task<ICollection<Tag>> GetByBookId(Guid bookId)
 	{
-		return context.BookTags
+		return await context.BookTags
 			.Where(e => e.BookId == bookId)
-			.Select(e => e.Tag).ToList();
+			.Select(e => e.Tag).ToListAsync();
 	}
 
-	public bool Create(Tag tag)
+	public async Task<bool> Create(Tag tag)
 	{
-		context.Add(tag);
-		return Save();
+		await context.AddAsync(tag);
+		return await Save();
 	}
-	public bool Update(Tag tag)
+	public async Task<bool> Update(Tag tag)
 	{
 		context.Update(tag);
-		return Save();
+		return await Save();
 	}
-	public bool Delete(Guid id)
+	public async Task<bool> Delete(Guid id)
 	{
-		if (!Exists(id))
+		if (!await Exists(id))
 		{
 			throw new ArgumentException($"Tag ID: \"{id}\" does not exist");
 		}
-		if (context.BookTags.Where(ba => ba.TagId == id).Any())
+		if (await context.BookTags.Where(ba => ba.TagId == id).AnyAsync())
 		{
 			throw new InvalidOperationException
 				($"Deletion not allowed: " +
@@ -58,17 +59,17 @@ public class TagRepository(DataContext context) : ITagRepository
 		}
 		try
 		{
-			var tag = Get(id);
+			var tag = await Get(id);
 			context.Remove(tag);
-			return Save();
+			return await Save();
 		}
 		catch
 		{
 			throw;
 		}
 	}
-	public bool Save()
+	public async Task<bool> Save()
 	{
-		return (context.SaveChanges() > 0) ? true : false;
+		return (await context.SaveChangesAsync() > 0) ? true : false;
 	}
 }

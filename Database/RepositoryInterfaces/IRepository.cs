@@ -9,12 +9,12 @@ namespace Database.RepositoryInterfaces
 {
 	public interface IRepository<T>
 	{
-		T Get(Guid id);
-		ICollection<T> GetAll();
-		ICollection<T> Get(string name);
-		bool Delete(Guid id);
-		bool Update(T entity);
-		bool Exists(Guid id);
-		bool Save();
+		Task<T> Get(Guid id);
+		Task<ICollection<T>> GetAll();
+		Task<ICollection<T>> Get(string name);
+		Task<bool> Delete(Guid id);
+		Task<bool> Update(T entity);
+		Task<bool> Exists(Guid id);
+		Task<bool> Save();
 	}
 }

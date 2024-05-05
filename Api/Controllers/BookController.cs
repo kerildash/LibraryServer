@@ -16,9 +16,9 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(200, Type = typeof(IEnumerable<BookDto>))]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User")]
-	public IActionResult Get()
+	public async Task<IActionResult> Get()
 	{
-		var books = mapper.Map<List<BookDto>>(repository.GetAll());
+		var books = mapper.Map<List<BookDto>>(await repository.GetAll());
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -29,9 +29,9 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(200, Type = typeof(BookDto))]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User")]
-	public IActionResult Get(Guid id)
+	public async Task<IActionResult> Get(Guid id)
 	{
-		var book = mapper.Map<BookDto>(repository.Get(id));
+		var book = mapper.Map<BookDto>(await repository.Get(id));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -43,9 +43,9 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(200, Type = typeof(IEnumerable<BookDto>))]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User")]
-	public IActionResult GetByAuthorID(Guid authorId)
+	public async Task<IActionResult> GetByAuthorID(Guid authorId)
 	{
-		var books = mapper.Map<List<BookDto>>(repository.GetByAuthorId(authorId));
+		var books = mapper.Map<List<BookDto>>(await repository.GetByAuthorId(authorId));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -57,7 +57,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "Admin")]
-	public IActionResult Create([FromQuery] List<Guid> authorIds, [FromBody] BookDto bookCreate)
+	public async Task<IActionResult> Create([FromQuery] List<Guid> authorIds, [FromBody] BookDto bookCreate)
 	{
 		try
 		{
@@ -66,7 +66,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 				return BadRequest(ModelState);
 			}
 			var bookMap = mapper.Map<Book>(bookCreate);
-			var isCreated = repository.Create(authorIds, bookMap);
+			var isCreated = await repository.Create(authorIds, bookMap);
 			if (!isCreated)
 			{
 				ModelState.AddModelError("", "Error while saving");
@@ -86,7 +86,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
 	[Authorize(Roles = "Admin")]
-	public IActionResult Update(Guid bookId, [FromBody] BookDto bookUpdate)
+	public async Task<IActionResult> Update(Guid bookId, [FromBody] BookDto bookUpdate)
 	{
 		if (bookUpdate is null)
 		{
@@ -96,7 +96,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 		{
 			return BadRequest(ModelState);
 		}
-		if (!repository.Exists(bookId))
+		if (!await repository.Exists(bookId))
 		{
 			return NotFound();
 		}
@@ -105,7 +105,7 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 			return BadRequest();
 		}
 		var bookMap = mapper.Map<Book>(bookUpdate);
-		if (!repository.Update(bookMap))
+		if (!await repository.Update(bookMap))
 		{
 			ModelState.AddModelError("", "Error while updating");
 			return StatusCode(500, ModelState);
@@ -117,15 +117,15 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
 	[Authorize(Roles = "Admin")]
-	public IActionResult AddAuthor(Guid bookId, Guid authorId)
+	public async Task<IActionResult> AddAuthor(Guid bookId, Guid authorId)
 	{
 		try
 		{
-			if (!repository.Exists(bookId))
+			if (!await repository.Exists(bookId))
 			{
 				return NotFound();
 			}
-			repository.AddBookAuthor(bookId, authorId);
+			await repository.AddBookAuthor(bookId, authorId);
 			return NoContent();
 		}
 		catch (InvalidOperationException ex)
@@ -145,11 +145,11 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
 	[Authorize(Roles = "Admin")]
-	public IActionResult RemoveAuthor(Guid bookId, Guid authorId)
+	public async Task<IActionResult> RemoveAuthor(Guid bookId, Guid authorId)
 	{
 		try
 		{
-			repository.RemoveBookAuthor(bookId, authorId);
+			await repository.RemoveBookAuthor(bookId, authorId);
 			return NoContent();
 		}
 		catch (InvalidOperationException ex)

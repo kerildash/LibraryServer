@@ -4,6 +4,7 @@ namespace Database.RepositoryInterfaces;
 
 public interface IAuthorRepository : IRepository<Author>
 {
-	ICollection<Author> GetByBookId(Guid bookId);
-	public bool Create(Author author);
+	//Task<ICollection<Author>> GetAllAsync();
+	public Task<ICollection<Author>> GetByBookId(Guid bookId);
+	public Task<bool> Create(Author author);
 }

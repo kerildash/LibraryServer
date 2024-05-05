@@ -7,46 +7,47 @@ namespace Database.Repositories;
 public class AuthorRepository(DataContext context) : IAuthorRepository
 {
 
-	public bool Exists(Guid id)
+	public async Task<bool> Exists(Guid id)
 	{
-		return context.Authors.Any(a => a.Id == id);
+		return await context.Authors.AnyAsync(a => a.Id == id);
 	}
-	public Author Get(Guid id)
+	public async Task<Author> Get(Guid id)
 	{
-		if (!Exists(id))
+		if (!await Exists(id))
 		{
 			throw new ArgumentException("Author not found");
 		}
-		return context.Authors.FirstOrDefault(a => a.Id == id);
+		return await context.Authors.FirstOrDefaultAsync(a => a.Id == id) ?? throw new NullReferenceException();
 	}
-	public ICollection<Author> GetAll()
+	public async Task<ICollection<Author>> GetAll()
 	{
-		return context.Authors.ToList();
+		return await context.Authors.ToListAsync();
 	}
-	public ICollection<Author> Get(string name)
+	
+	public async Task<ICollection<Author>> Get(string name)
 	{
 		throw new NotImplementedException();
 	}
-	public ICollection<Author> GetByBookId(Guid bookId)
+	public async Task<ICollection<Author>> GetByBookId(Guid bookId)
 	{
-		return context.BookAuthors
+		return await context.BookAuthors
 			.Where(e => e.BookId == bookId)
-			.Select(e => e.Author).ToList();
+			.Select(e => e.Author).ToListAsync();
 	}
 
-	public bool Create(Author author)
+	public async Task<bool> Create(Author author)
 	{
-		context.Add(author);
-		return Save();
+		await context.AddAsync(author);
+		return await Save();
 	}
-	public bool Update(Author author)
+	public async Task<bool> Update(Author author)
 	{
 		context.Update(author);
-		return Save();
+		return await Save();
 	}
-	public bool Delete(Guid id)
+	public async Task<bool> Delete(Guid id)
 	{
-		if (!Exists(id))
+		if (!await Exists(id))
 		{
 			throw new ArgumentException($"Author ID: \"{id}\" does not exist");
 		}
@@ -59,17 +60,17 @@ public class AuthorRepository(DataContext context) : IAuthorRepository
 		}
 		try
 		{
-			var author = Get(id);
+			var author = await Get(id);
 			context.Remove(author);
-			return Save();
+			return await Save();
 		}
 		catch
 		{
 			throw;
 		}
 	}
-	public bool Save()
+	public async Task<bool> Save()
 	{
-		return (context.SaveChanges() > 0) ? true : false;
+		return (await context.SaveChangesAsync() > 0) ? true : false;
 	}
 }

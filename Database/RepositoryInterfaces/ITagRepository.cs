@@ -9,6 +9,6 @@ namespace Database.RepositoryInterfaces;
 
 public interface ITagRepository : IRepository<Tag>
 {
-	public ICollection<Tag> GetByBookId(Guid bookId);
-	public bool Create(Tag tag);
+	public Task<ICollection<Tag>> GetByBookId(Guid bookId);
+	public Task<bool> Create(Tag tag);
 }

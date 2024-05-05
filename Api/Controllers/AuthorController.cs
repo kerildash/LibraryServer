@@ -15,10 +15,10 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[HttpGet]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
-	[Authorize(Roles = "User")]
-	public IActionResult Get()
+	//[Authorize(Roles = "User")]
+	public async Task<IActionResult> Get()
 	{
-		var authors = mapper.Map<List<AuthorDto>>(repository.GetAll());
+		var authors = mapper.Map<List<AuthorDto>>(await repository.GetAll());
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -56,15 +56,15 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[HttpPost]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
-	[Authorize(Roles = "Admin")]
-	public IActionResult Create([FromBody] AuthorDto authorCreate)
+	//[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> Create([FromBody] AuthorDto authorCreate)
 	{
 		if (authorCreate is null)
 		{
 			return BadRequest(ModelState);
 		}
 		var authorMap = mapper.Map<Author>(authorCreate);
-		var isCreated = repository.Create(authorMap);
+		var isCreated = await repository.Create(authorMap);
 		if (!isCreated)
 		{
 			ModelState.AddModelError("", "Error while saving");
@@ -78,7 +78,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
 	[Authorize(Roles = "Admin")]
-	public IActionResult Update(Guid authorId, [FromBody] AuthorDto authorUpdate)
+	public async Task<IActionResult> Update(Guid authorId, [FromBody] AuthorDto authorUpdate)
 	{
 		if (authorUpdate is null)
 		{
@@ -88,7 +88,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 		{
 			return BadRequest(ModelState);
 		}
-		if (!repository.Exists(authorId))
+		if (!await repository.Exists(authorId))
 		{
 			return NotFound();
 		}
@@ -97,7 +97,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 			return BadRequest(ModelState);
 		}
 		var authorMap = mapper.Map<Author>(authorUpdate);
-		if (!repository.Update(authorMap))
+		if (!await repository.Update(authorMap))
 		{
 			ModelState.AddModelError("", "Error while updating");
 			return StatusCode(500, ModelState);
@@ -107,9 +107,9 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 
 	[HttpDelete("{authorId}")]
 	[Authorize(Roles = "Admin")]
-	public IActionResult Delete(Guid authorId)
+	public async Task<IActionResult> Delete(Guid authorId)
 	{
-		if (!repository.Exists(authorId))
+		if (!await repository.Exists(authorId))
 		{
 			return NotFound();
 		}
@@ -119,7 +119,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 		}
 		try
 		{
-			repository.Delete(authorId);
+			await repository.Delete(authorId);
 			return NoContent();
 		}
 		catch (ArgumentException ex)

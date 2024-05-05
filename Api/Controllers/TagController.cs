@@ -14,9 +14,9 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 	[HttpGet]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<TagDto>))]
 	[ProducesResponseType(400)]
-	public IActionResult Get()
+	public async Task<IActionResult> Get()
 	{
-		var tags = mapper.Map<List<TagDto>>(repository.GetAll());
+		var tags = mapper.Map<List<TagDto>>(await repository.GetAll());
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -26,9 +26,9 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 	[HttpGet("id/{id}")]
 	[ProducesResponseType(200, Type = typeof(TagDto))]
 	[ProducesResponseType(400)]
-	public IActionResult Get(Guid id)
+	public async Task<IActionResult> Get(Guid id)
 	{
-		var tag = mapper.Map<TagDto>(repository.Get(id));
+		var tag = mapper.Map<TagDto>(await repository.Get(id));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -38,9 +38,9 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 	[HttpGet("by-book/{bookId}")]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<TagDto>))]
 	[ProducesResponseType(400)]
-	public IActionResult GetByTagID(Guid bookId)
+	public async Task<IActionResult> GetByTagID(Guid bookId)
 	{
-		var tags = mapper.Map<List<TagDto>>(repository.GetByBookId(bookId));
+		var tags = mapper.Map<List<TagDto>>(await repository.GetByBookId(bookId));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -50,14 +50,14 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 	[HttpPost]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
-	public IActionResult Create([FromBody] TagDto tagCreate)
+	public async Task<IActionResult> Create([FromBody] TagDto tagCreate)
 	{
 		if (tagCreate is null)
 		{
 			return BadRequest(ModelState);
 		}
 		var tagMap = mapper.Map<Tag>(tagCreate);
-		var isCreated = repository.Create(tagMap);
+		var isCreated = await repository.Create(tagMap);
 		if (!isCreated)
 		{
 			ModelState.AddModelError("", "Error while saving");
@@ -69,7 +69,7 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
-	public IActionResult Update(Guid tagId, [FromBody] TagDto tagUpdate)
+	public async Task<IActionResult> Update(Guid tagId, [FromBody] TagDto tagUpdate)
 	{
 		if (tagUpdate is null)
 		{
@@ -79,7 +79,7 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 		{
 			return BadRequest(ModelState);
 		}
-		if (!repository.Exists(tagId))
+		if (!await repository.Exists(tagId))
 		{
 			return NotFound();
 		}
@@ -88,7 +88,7 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 			return BadRequest(ModelState);
 		}
 		var tagMap = mapper.Map<Tag>(tagUpdate);
-		if (!repository.Update(tagMap))
+		if (!await repository.Update(tagMap))
 		{
 			ModelState.AddModelError("", "Error while updating");
 			return StatusCode(500, ModelState);
@@ -97,9 +97,9 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 	}
 
 	[HttpDelete("{tagId}")]
-	public IActionResult Delete(Guid tagId)
+	public async Task<IActionResult> Delete(Guid tagId)
 	{
-		if (!repository.Exists(tagId))
+		if (!await repository.Exists(tagId))
 		{
 			return NotFound();
 		}
@@ -109,7 +109,7 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 		}
 		try
 		{
-			repository.Delete(tagId);
+			await repository.Delete(tagId);
 			return NoContent();
 		}
 		catch (ArgumentException ex)
