@@ -1,7 +1,6 @@
 ﻿using Database.RepositoryInterfaces;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Xml.Serialization;
 
 namespace Database.Repositories;
 

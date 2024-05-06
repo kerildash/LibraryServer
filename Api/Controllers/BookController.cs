@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using Database.RepositoryInterfaces;
 using Domain.Models;
-using Shared.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Shared.Dto.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Api.Services;
 
 namespace Api.Controllers;
 

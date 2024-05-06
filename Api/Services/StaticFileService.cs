@@ -1,8 +1,5 @@
 ﻿using Domain.Models;
-using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
-using System;
-using System.IO;
 
 namespace Api.Services;
 

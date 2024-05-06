@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared.Dto.Account;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Api.Controllers;
 

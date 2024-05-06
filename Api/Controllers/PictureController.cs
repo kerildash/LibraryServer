@@ -2,10 +2,7 @@
 using Database.RepositoryInterfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Dto;
-//using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 namespace Api.Controllers;
 
