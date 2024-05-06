@@ -56,16 +56,16 @@ public class DataContext : IdentityDbContext<AppUser>
 			.HasForeignKey(ba => ba.AuthorId);
 
 
-		modelBuilder.Entity<Book>()
-		    .HasOne(b => b.Cover)
-		    .WithOne()
-			.HasForeignKey<Picture>(p => p.HolderId)
-			.IsRequired(false);
+		//modelBuilder.Entity<Book>()
+		//    .HasOne(b => b.Cover)
+		//    .WithOne()
+		//	.HasForeignKey<Picture>(p => p.HolderId)
+		//	.IsRequired(false);
 
-		modelBuilder.Entity<Book>()
-			.HasOne(b => b.Document)
-			.WithOne()
-			.HasForeignKey<Document>(d => d.HolderId)
-			.IsRequired(false);
+		//modelBuilder.Entity<Book>()
+		//	.HasOne(b => b.Document)
+		//	.WithOne()
+		//	.HasForeignKey<Document>(d => d.HolderId)
+		//	.IsRequired(false);
 	}
 }

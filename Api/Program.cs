@@ -138,6 +138,8 @@ public class Program
 	private static void AddServices(WebApplicationBuilder builder)
 	{
 		builder.Services.AddScoped<ITokenService, TokenService>();
+		builder.Services.AddScoped<IStaticFileService<Document>, StaticFileService<Document>>();
+		builder.Services.AddScoped<IStaticFileService<Picture>, StaticFileService<Picture>>();
 	}
 
 

@@ -45,18 +45,18 @@ public class BookRepository(DataContext context) : IBookRepository
 		//	.ToList();
 	}
 
-	public async Task<bool> Create(List<Guid> authorIds, Book book)
+	public async Task<bool> Create(List<Guid?> authorIds, Book book)
 	{
 		try
 		{
-			foreach (var id in authorIds)
+			foreach (Guid? id in authorIds)
 			{
 				var author = await context.Authors.Where(a => a.Id == id).FirstOrDefaultAsync();
 				if (author == null)
 				{
 					throw new NullReferenceException("Author not found");
 				}
-				AddBookAuthor(book, author);
+				await AddBookAuthor(book, author);
 			}
 
 			await context.AddAsync(book);

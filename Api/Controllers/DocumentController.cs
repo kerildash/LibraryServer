@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Api.Services;
+using AutoMapper;
 using Database.RepositoryInterfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -12,38 +13,26 @@ namespace Api.Controllers;
 
 [Route("api/[controller]s")]
 [ApiController]
-public class DocumentController(IDocumentRepository repository, IMapper mapper, IWebHostEnvironment environment) : ControllerBase
+public class DocumentController(IDocumentRepository repository, IMapper mapper, IWebHostEnvironment environment, IStaticFileService<Document> staticFileService) : ControllerBase
 {
-	[HttpPost]
+	[HttpPost, DisableRequestSizeLimit]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
-	[Authorize(Roles = "Admin")]
-	public async Task<IActionResult> Create(IFormFile documentCreate)
+	//[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> Create()
 	{
+		var formCollection = await Request.ReadFormAsync();
+		var documentCreate = formCollection.Files.First();
 		if (documentCreate is null)
 		{
 			return BadRequest(ModelState);
 		}
-		if (!IsValidExtension(documentCreate))
+		if (!staticFileService.IsValidExtension(documentCreate))
 		{
 			ModelState.AddModelError("", "Wrong file type. File can not be uploaded.");
 			return BadRequest(ModelState);
 		}
-		string name = HandleName(documentCreate.FileName);
-		string path = "/Files/" + name;
-		string extension = GetExtension(documentCreate);
-		using (var fileStream = new FileStream(environment.WebRootPath + path, FileMode.Create))
-		{
-			await documentCreate.CopyToAsync(fileStream);
-		}
-		var document = new Document()
-		{
-			Id = Guid.NewGuid(),
-			Name = name,
-			Path = path,
-			Extension = extension,
-			
-		};
+		var document = await staticFileService.CreateAsync(documentCreate);
 
 		var isCreated = await repository.Create(document);
 		if (!isCreated)
@@ -53,10 +42,8 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 		}
 		return Ok(document.Id);
 	}
-
-
 	[HttpGet("id/{id}")]
-	[Authorize(Roles = "User")]
+	//[Authorize(Roles = "User")]
 	public async Task<IActionResult> Get(Guid id)
 	{
 		var document = await repository.Get(id);
@@ -67,55 +54,22 @@ public class DocumentController(IDocumentRepository repository, IMapper mapper, 
 		}
 		return Ok(file);
 	}
-
-
 	[HttpGet("by-book/{parentId}")]
 	[HttpGet("by-author/{parentId}")]
 	[Authorize(Roles = "User")]
 	public async Task<IActionResult> GetByParentId(Guid parentId)
 	{
 		var documents = await repository.GetByHolderId(parentId);
+
 		var files = documents.Select(GetFile).ToList();
 		return Ok(files);
 	}
-	private PhysicalFileResult GetFile(StaticFile document)
-	{
-		var fullPath = environment.WebRootPath + document.Path;
-		return PhysicalFile(fullPath, "application/octet-stream", Path.GetFileName(fullPath));
-	}
-	private string HandleName(string name)
-	{
-		if (!IsValidName(name))
-		{
-			return $"{Guid.NewGuid()}.{Path.GetExtension(name)}";
-		}
-		return Regex.Replace(name, @"\s+", "");
-	}
-	private bool IsValidName(
-		string text,
-		string pattern = @"^[a-zA-Z0-9](?:[a-zA-Z0-9 ._-]*[a-zA-Z0-9])?\.[a-zA-Z0-9_-]+$")
-	{
-		return Regex.IsMatch(text, pattern);
-	}
 
-	private bool IsValidExtension(IFormFile file)
+	private FileResult GetFile(StaticFile document)
 	{
-		List<string> extensions = [
-			".pdf",
-			".epub",
-			".fb2",
-			".mobi",
-			".djvu",
-			".docx"];
-		string extension = GetExtension(file);
-		if (extensions.Contains(extension))
-		{
-			return true;
-		}
-		return false;
-	}
-	private string GetExtension(IFormFile file)
-	{
-		return Path.GetExtension(file.FileName).Trim().ToLower();
+
+		var fullPath = environment.WebRootPath + document.Path;
+		byte[] bytes = System.IO.File.ReadAllBytes(fullPath);
+		return File(bytes, "application/octet-stream", Path.GetFileName(fullPath));
 	}
 }

@@ -4,6 +4,7 @@ using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240506131833_NoPictures")]
+    partial class NoPictures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,6 +180,10 @@ namespace Database.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("HolderId")
+                        .IsUnique()
+                        .HasFilter("[HolderId] IS NOT NULL");
 
                     b.ToTable("Documents");
                 });
@@ -393,6 +400,13 @@ namespace Database.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("Domain.Models.Document", b =>
+                {
+                    b.HasOne("Domain.Models.Book", null)
+                        .WithOne("Document")
+                        .HasForeignKey("Domain.Models.Document", "HolderId");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -454,6 +468,9 @@ namespace Database.Migrations
                     b.Navigation("BookAuthors");
 
                     b.Navigation("BookTags");
+
+                    b.Navigation("Document")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Models.Tag", b =>
