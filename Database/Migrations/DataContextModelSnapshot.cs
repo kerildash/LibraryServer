@@ -178,6 +178,10 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("HolderId")
+                        .IsUnique()
+                        .HasFilter("[HolderId] IS NOT NULL");
+
                     b.ToTable("Documents");
                 });
 
@@ -203,6 +207,10 @@ namespace Database.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("HolderId")
+                        .IsUnique()
+                        .HasFilter("[HolderId] IS NOT NULL");
 
                     b.ToTable("Pictures");
                 });
@@ -393,6 +401,20 @@ namespace Database.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("Domain.Models.Document", b =>
+                {
+                    b.HasOne("Domain.Models.Book", null)
+                        .WithOne("Document")
+                        .HasForeignKey("Domain.Models.Document", "HolderId");
+                });
+
+            modelBuilder.Entity("Domain.Models.Picture", b =>
+                {
+                    b.HasOne("Domain.Models.Book", null)
+                        .WithOne("Cover")
+                        .HasForeignKey("Domain.Models.Picture", "HolderId");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -454,6 +476,12 @@ namespace Database.Migrations
                     b.Navigation("BookAuthors");
 
                     b.Navigation("BookTags");
+
+                    b.Navigation("Cover")
+                        .IsRequired();
+
+                    b.Navigation("Document")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Models.Tag", b =>

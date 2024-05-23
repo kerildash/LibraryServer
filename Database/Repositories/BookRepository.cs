@@ -57,6 +57,13 @@ public class BookRepository(DataContext context) : IBookRepository
 				}
 				await AddBookAuthor(book, author);
 			}
+			//Picture? cover = await context.Pictures.Where(p => p.Id == book.Cover.Id).FirstOrDefaultAsync();
+			//cover.HolderId = book.Id;
+			//context.Update(cover);
+
+			//Document? document = await context.Documents.Where(d => d.Id == book.Document.Id).FirstOrDefaultAsync();
+			//document.HolderId = book.Id;
+			//context.Update(document);
 
 			await context.AddAsync(book);
 			return await Save();
