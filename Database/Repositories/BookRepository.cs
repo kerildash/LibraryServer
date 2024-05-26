@@ -16,15 +16,37 @@ public class BookRepository(DataContext context) : IBookRepository
 		{
 			throw new ArgumentException("Book not found");
 		}
-		return await context.Books.FirstOrDefaultAsync(b => b.Id == id) ?? throw new NullReferenceException();
+		return await context.Books
+			.Include(b => b.Cover)
+			.Include(b => b.Document)
+			.Include(b => b.BookAuthors)
+			.ThenInclude(ba => ba.Author)
+			.Include(b => b.BookTags)
+			.ThenInclude(ba => ba.Tag)
+			.FirstOrDefaultAsync(b => b.Id == id)
+			?? throw new NullReferenceException();
 	}
 	public async Task<ICollection<Book>> GetAll()
 	{
-		return await context.Books.ToListAsync();
+		var books = await context.Books
+			.Include(b => b.Cover)
+			.Include(b => b.Document)
+			.Include(b => b.BookAuthors)
+			.ThenInclude(ba => ba.Author)
+			.Include(b => b.BookTags)
+			.ThenInclude(ba => ba.Tag)
+			.ToListAsync();
+		return books;
 	}
 	public async Task<ICollection<Book>> Get(string title)
 	{
 		return await context.Books
+			.Include(b => b.Cover)
+			.Include(b => b.Document)
+			.Include(b => b.BookAuthors)
+			.ThenInclude(ba => ba.Author)
+			.Include(b => b.BookTags)
+			.ThenInclude(ba => ba.Tag)
 			.Where(b => b.Title.Contains(title))
 			.ToListAsync();
 	}
@@ -33,6 +55,12 @@ public class BookRepository(DataContext context) : IBookRepository
 		return await context.BookAuthors
 			.Where(ba => ba.AuthorId == authorId)
 			.Select(ba => ba.Book)
+			.Include(b => b.Cover)
+			.Include(b => b.Document)
+			.Include(b => b.BookAuthors)
+			.ThenInclude(ba => ba.Author)
+			.Include(b => b.BookTags)
+			.ThenInclude(ba => ba.Tag)
 			.ToListAsync();
 	}
 	public async Task<ICollection<Book>> GetByTagId(Guid tagId)
