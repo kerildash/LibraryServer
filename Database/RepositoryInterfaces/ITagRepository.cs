@@ -2,8 +2,8 @@
 
 namespace Database.RepositoryInterfaces;
 
-public interface ITagRepository : IRepository<Tag>
+public interface ITagRepository : IRepository<Tag>, IUpdatable<Tag>
 {
-	public Task<ICollection<Tag>> GetByBookId(Guid bookId);
-	public Task<bool> Create(Tag tag);
+	public Task<ICollection<Tag>> GetByBookIdAsync(Guid bookId);
+	public Task CreateAsync(Tag tag);
 }

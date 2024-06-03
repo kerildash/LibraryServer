@@ -2,9 +2,9 @@
 
 namespace Database.RepositoryInterfaces;
 
-public interface IAuthorRepository : IRepository<Author>
+public interface IAuthorRepository : IRepository<Author>, IUpdatable<Author>
 {
 	//Task<ICollection<Author>> GetAllAsync();
-	public Task<ICollection<Author>> GetByBookId(Guid bookId);
-	public Task<bool> Create(Author author);
+	public Task<ICollection<Author>> GetByBookIdAsync(Guid bookId);
+	public Task CreateAsync(Author author);
 }
