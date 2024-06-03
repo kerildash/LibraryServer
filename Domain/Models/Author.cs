@@ -10,5 +10,5 @@ public class Author
 	public Picture? Photo { get; set; }
 
 	//join tables for many-to-many
-	public ICollection<BookAuthor>? BookAuthors { get; set; }
+	public ICollection<BookAuthor> BookAuthors { get; set; }
 }

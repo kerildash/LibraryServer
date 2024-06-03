@@ -11,6 +11,6 @@ public class Book
 	public required Document Document { get; set; }
 
 	//join tables for many-to-many
-	public ICollection<BookAuthor>? BookAuthors { get; set; }
-	public ICollection<BookTag>? BookTags { get; set; }
+	public ICollection<BookAuthor> BookAuthors { get; set; }
+	public ICollection<BookTag> BookTags { get; set; }
 }
