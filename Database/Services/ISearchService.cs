@@ -1,8 +1,6 @@
-﻿using Domain.Models;
+﻿namespace Database.Services;
 
-namespace Database.Services;
-
-internal interface ISearchService<T> where T : StaticFile
+public interface ISearchService<T>
 {
-	Task<T> FindAsync(string query);
+	Task<ICollection<T>> FindAsync(string query);
 }
