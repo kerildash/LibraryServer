@@ -3,9 +3,9 @@ using Domain.Models;
 
 namespace Database.RepositoryInterfaces
 {
-	public interface IStaticFileRepository : IRepository<StaticFile>
+	public interface IStaticFileRepository<T> : IRepository<T>, IUpdatable<T> where T : StaticFile
 	{
-		Task<ICollection<StaticFile>> GetByHolderId(Guid parentId);
-		Task<bool> Create(StaticFile document);
+		Task<ICollection<T>> GetByHolderIdAsync(Guid holderId);
+		Task CreateAsync(T file);
 	}
 }
