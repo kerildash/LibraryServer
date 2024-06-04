@@ -1,52 +1,53 @@
 ﻿using Database.RepositoryInterfaces;
+using Database.Services;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories;
 
-public class TagRepository(DataContext context) : ITagRepository
+public class TagRepository(DataContext context, ISearchService<Tag> search) : ITagRepository
 {
 
-	public async Task<bool> Exists(Guid id)
+	public async Task<bool> ExistsAsync(Guid id)
 	{
 		return await context.Tags.AnyAsync(a => a.Id == id);
 	}
-	public async Task<Tag> Get(Guid id)
+	public async Task<Tag> GetAsync(Guid id)
 	{
-		if (!await Exists(id))
+		if (!await ExistsAsync(id))
 		{
 			throw new ArgumentException("Tag not found");
 		}
-		return await context.Tags.FirstOrDefaultAsync(a => a.Id == id) ?? throw new NullReferenceException();
+		return await context.Tags.FirstAsync(a => a.Id == id);
 	}
-	public async Task<ICollection<Tag>> GetAll()
+	public async Task<ICollection<Tag>> GetAllAsync()
 	{
 		return await context.Tags.ToListAsync();
 	}
-	public async Task<ICollection<Tag>> Get(string name)
+	public async Task<ICollection<Tag>> GetAsync(string query)
 	{
-		throw new NotImplementedException();
+		return await search.FindAsync(query);
 	}
-	public async Task<ICollection<Tag>> GetByBookId(Guid bookId)
+	public async Task<ICollection<Tag>> GetByBookIdAsync(Guid bookId)
 	{
 		return await context.BookTags
 			.Where(e => e.BookId == bookId)
 			.Select(e => e.Tag).ToListAsync();
 	}
 
-	public async Task<bool> Create(Tag tag)
+	public async Task CreateAsync(Tag tag)
 	{
 		await context.AddAsync(tag);
-		return await Save();
+		await SaveAsync();
 	}
-	public async Task<bool> Update(Tag tag)
+	public async Task UpdateAsync(Tag tag)
 	{
 		context.Update(tag);
-		return await Save();
+		await SaveAsync();
 	}
-	public async Task<bool> Delete(Guid id)
+	public async Task DeleteAsync(Guid id)
 	{
-		if (!await Exists(id))
+		if (!await ExistsAsync(id))
 		{
 			throw new ArgumentException($"Tag ID: \"{id}\" does not exist");
 		}
@@ -57,19 +58,12 @@ public class TagRepository(DataContext context) : ITagRepository
 				$"there are 1 or more books related with this tag." +
 				$"Delete them and try again.");
 		}
-		try
-		{
-			var tag = await Get(id);
-			context.Remove(tag);
-			return await Save();
-		}
-		catch
-		{
-			throw;
-		}
+		var tag = await GetAsync(id);
+		context.Remove(tag);
+		await SaveAsync();
 	}
-	public async Task<bool> Save()
+	public async Task SaveAsync()
 	{
-		return (await context.SaveChangesAsync() > 0) ? true : false;
+		await context.SaveChangesAsync();
 	}
 }
