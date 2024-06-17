@@ -1,53 +1,54 @@
 ﻿using Database.RepositoryInterfaces;
+using Database.Services;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories;
 
-public class AuthorRepository(DataContext context) : IAuthorRepository
+public class AuthorRepository(DataContext context, ISearchService<Author> search) : IAuthorRepository
 {
 
-	public async Task<bool> Exists(Guid id)
+	public async Task<bool> ExistsAsync(Guid id)
 	{
 		return await context.Authors.AnyAsync(a => a.Id == id);
 	}
-	public async Task<Author> Get(Guid id)
+	public async Task<Author> GetAsync(Guid id)
 	{
-		if (!await Exists(id))
+		if (!await ExistsAsync(id))
 		{
 			throw new ArgumentException("Author not found");
 		}
-		return await context.Authors.FirstOrDefaultAsync(a => a.Id == id) ?? throw new NullReferenceException();
+		return await context.Authors.FirstAsync(a => a.Id == id);
 	}
-	public async Task<ICollection<Author>> GetAll()
+	public async Task<ICollection<Author>> GetAllAsync()
 	{
 		return await context.Authors.ToListAsync();
 	}
 	
-	public async Task<ICollection<Author>> Get(string name)
+	public async Task<ICollection<Author>> GetAsync(string query)
 	{
-		throw new NotImplementedException();
+		return await search.FindAsync(query);
 	}
-	public async Task<ICollection<Author>> GetByBookId(Guid bookId)
+	public async Task<ICollection<Author>> GetByBookIdAsync(Guid bookId)
 	{
 		return await context.BookAuthors
 			.Where(e => e.BookId == bookId)
 			.Select(e => e.Author).ToListAsync();
 	}
 
-	public async Task<bool> Create(Author author)
+	public async Task CreateAsync(Author author)
 	{
 		await context.AddAsync(author);
-		return await Save();
+		await SaveAsync();
 	}
-	public async Task<bool> Update(Author author)
+	public async Task UpdateAsync(Author author)
 	{
 		context.Update(author);
-		return await Save();
+		await SaveAsync();
 	}
-	public async Task<bool> Delete(Guid id)
+	public async Task DeleteAsync(Guid id)
 	{
-		if (!await Exists(id))
+		if (!await ExistsAsync(id))
 		{
 			throw new ArgumentException($"Author ID: \"{id}\" does not exist");
 		}
@@ -60,17 +61,17 @@ public class AuthorRepository(DataContext context) : IAuthorRepository
 		}
 		try
 		{
-			var author = await Get(id);
+			var author = await GetAsync(id);
 			context.Remove(author);
-			return await Save();
+			await SaveAsync();
 		}
 		catch
 		{
 			throw;
 		}
 	}
-	public async Task<bool> Save()
+	public async Task SaveAsync()
 	{
-		return (await context.SaveChangesAsync() > 0) ? true : false;
+		await context.SaveChangesAsync();
 	}
 }

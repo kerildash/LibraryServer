@@ -1,18 +1,19 @@
 ﻿using Database.RepositoryInterfaces;
+using Database.Services;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories;
 
-public class BookRepository(DataContext context) : IBookRepository
+public class BookRepository(DataContext context, ISearchService<Book> search) : IBookRepository
 {
-	public async Task<bool> Exists(Guid id)
+	public async Task<bool> ExistsAsync(Guid id)
 	{
 		return await context.Books.AnyAsync(b => b.Id == id);
 	}
-	public async Task<Book> Get(Guid id)
+	public async Task<Book> GetAsync(Guid id)
 	{
-		if (!await Exists(id))
+		if (!await ExistsAsync(id))
 		{
 			throw new ArgumentException("Book not found");
 		}
@@ -26,7 +27,7 @@ public class BookRepository(DataContext context) : IBookRepository
 			.FirstOrDefaultAsync(b => b.Id == id)
 			?? throw new NullReferenceException();
 	}
-	public async Task<ICollection<Book>> GetAll()
+	public async Task<ICollection<Book>> GetAllAsync()
 	{
 		var books = await context.Books
 			.Include(b => b.Cover)
@@ -38,19 +39,11 @@ public class BookRepository(DataContext context) : IBookRepository
 			.ToListAsync();
 		return books;
 	}
-	public async Task<ICollection<Book>> Get(string title)
+	public async Task<ICollection<Book>> GetAsync(string query)
 	{
-		return await context.Books
-			.Include(b => b.Cover)
-			.Include(b => b.Document)
-			.Include(b => b.BookAuthors)
-			.ThenInclude(ba => ba.Author)
-			.Include(b => b.BookTags)
-			.ThenInclude(ba => ba.Tag)
-			.Where(b => b.Title.Contains(title))
-			.ToListAsync();
+		return await search.FindAsync(query);
 	}
-	public async Task<ICollection<Book>> GetByAuthorId(Guid authorId)
+	public async Task<ICollection<Book>> GetByAuthorIdAsync(Guid authorId)
 	{
 		return await context.BookAuthors
 			.Where(ba => ba.AuthorId == authorId)
@@ -63,16 +56,21 @@ public class BookRepository(DataContext context) : IBookRepository
 			.ThenInclude(ba => ba.Tag)
 			.ToListAsync();
 	}
-	public async Task<ICollection<Book>> GetByTagId(Guid tagId)
+	public async Task<ICollection<Book>> GetByTagIdAsync(Guid tagId)
 	{
-		throw new NotImplementedException();
-		//return context.BookTags
-		//	.Where(ba => ba.TagId == tagId)
-		//	.Select(ba => ba.Book)
-		//	.ToList();
+		return await context.BookTags
+			.Where(bt => bt.TagId == tagId)
+			.Select(bt => bt.Book)
+			.Include(b => b.Cover)
+			.Include(b => b.Document)
+			.Include(b => b.BookAuthors)
+			.ThenInclude(ba => ba.Author)
+			.Include(b => b.BookTags)
+			.ThenInclude(ba => ba.Tag)
+			.ToListAsync();
 	}
 
-	public async Task<bool> Create(List<Guid?> authorIds, Book book)
+	public async Task CreateAsync(List<Guid?> authorIds, Book book)
 	{
 		try
 		{
@@ -83,51 +81,52 @@ public class BookRepository(DataContext context) : IBookRepository
 				{
 					throw new NullReferenceException("Author not found");
 				}
-				await AddBookAuthor(book, author);
+				await AddBookAuthorAsync(book, author);
 			}
-			//Picture? cover = await context.Pictures.Where(p => p.Id == book.Cover.Id).FirstOrDefaultAsync();
-			//cover.HolderId = book.Id;
-			//context.Update(cover);
-
-			//Document? document = await context.Documents.Where(d => d.Id == book.Document.Id).FirstOrDefaultAsync();
-			//document.HolderId = book.Id;
-			//context.Update(document);
 
 			await context.AddAsync(book);
-			return await Save();
+			await SaveAsync();
 		}
 		catch
 		{
-
 			throw;
 		}
 	}
-	public async Task<bool> Update(Book book)
+	public async Task UpdateAsync(Book book)
 	{
 		try
 		{
 			context.Update(book);
-			return await Save();
+			await SaveAsync();
 		}
 		catch
 		{
 			throw;
 		}
 	}
-	public async Task<bool> Save()
+	public async Task DeleteAsync(Guid id)
 	{
+		if (!await ExistsAsync(id))
+		{
+			throw new ArgumentException($"Book ID: \"{id}\" does not exist");
+		}
 		try
 		{
-			return await context.SaveChangesAsync() > 0
-				? true
-				: throw new InvalidOperationException("Nothing to save");
+			await context.BookAuthors.Where(ba => ba.BookId == id).ExecuteDeleteAsync();
+			var book = await GetAsync(id);
+			context.Remove(book);
+			await SaveAsync();
 		}
 		catch
 		{
 			throw;
 		}
 	}
-	public async Task<bool> AddBookAuthor(Guid bookId, Guid authorId)
+	public async Task SaveAsync()
+	{
+		await context.SaveChangesAsync();
+	}
+	public async Task AddBookAuthorAsync(Guid bookId, Guid authorId)
 	{
 		try
 		{
@@ -142,14 +141,14 @@ public class BookRepository(DataContext context) : IBookRepository
 			{
 				throw new NullReferenceException("Book not found");
 			}
-			return await AddBookAuthor(book, author);
+			await AddBookAuthorAsync(book, author);
 		}
 		catch
 		{
 			throw;
 		}
 	}
-	public async Task<bool> RemoveBookAuthor(Guid bookId, Guid authorId)
+	public async Task RemoveBookAuthorAsync(Guid bookId, Guid authorId)
 	{
 		try
 		{
@@ -164,47 +163,33 @@ public class BookRepository(DataContext context) : IBookRepository
 					($"author id:{authorId}\" is not related with book id:{bookId}");
 			}
 			context.BookAuthors.Remove(bookAuthor);
-			return await Save();
+			await SaveAsync();
 		}
 		catch
 		{
 			throw;
 		}
 	}
-	public async Task<bool> Delete(Guid id)
+	
+	private async Task AddBookAuthorAsync(Book book, Author author)
 	{
-		if (!await Exists(id))
-		{
-			throw new ArgumentException($"Book ID: \"{id}\" does not exist");
-		}
-		try
-		{
-			await context.BookAuthors.Where(ba => ba.BookId == id).ExecuteDeleteAsync();
-			var book = await Get(id);
-			context.Remove(book);
-			return await Save();
-		}
-		catch
-		{
-			throw;
-		}
-	}
-	private async Task<bool> AddBookAuthor(Book book, Author author)
-	{
-		var bookAuthor = new BookAuthor()
-		{
-			Book = book,
-			Author = author,
-		};
-		if (await BookAuthorExists(book.Id, author.Id))
+		if (await BookAuthorExistsAsync(book.Id, author.Id))
 		{
 			throw new InvalidOperationException
 				($"author \"{author.Name}\" is already related with book \"{book.Title}\"");
 		}
+		var bookAuthor = new BookAuthor()
+		{
+			Book = book,
+			Author = author,
+			BookId = book.Id,
+			AuthorId = author.Id
+		};
+		
 		await context.AddAsync(bookAuthor);
-		return await Save();
+		await SaveAsync();
 	}
-	private async Task<bool> BookAuthorExists(Guid bookId, Guid authorId)
+	private async Task<bool> BookAuthorExistsAsync(Guid bookId, Guid authorId)
 	{
 		return await context.BookAuthors.AnyAsync(ba => ba.AuthorId == authorId && ba.BookId == bookId);
 	}
