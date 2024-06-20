@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Api.Services;
 using Microsoft.OpenApi.Models;
+using Api.Services.Interfaces;
 
 namespace Api;
 
