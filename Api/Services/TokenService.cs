@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Api.Services.Interfaces;
 using Domain.Models;
 using Microsoft.IdentityModel.Tokens;
 namespace Api.Services;

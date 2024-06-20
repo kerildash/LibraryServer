@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Api.Services.Interfaces;
+using Domain.Models;
 using System.Text.RegularExpressions;
 
 namespace Api.Services;
@@ -9,15 +10,12 @@ public class StaticFileService<T>(IWebHostEnvironment environment) : IStaticFile
 	{
 		string name = HandleName(staticFileCreate.FileName);
 		string path = "/Files/" + name;
-		string extension = GetExtension(staticFileCreate);
 		await SaveInWebRootAsync(path, staticFileCreate);
 
 		return new T()
 		{
 			Id = Guid.NewGuid(),
-			Name = name,
 			Path = path,
-			Extension = extension,
 		};
 	}
 	private async Task SaveInWebRootAsync(string path, IFormFile staticFileCreate)
