@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Api.Services.Interfaces;
+using AutoMapper;
 using Database.RepositoryInterfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -8,14 +9,14 @@ namespace Api.Controllers;
 
 [Route("api/[controller]s")]
 [ApiController]
-public class TagController(ITagRepository repository, IMapper mapper) : ControllerBase
+public class TagController(ITagRepository repository, ITagService tagService, IMapper mapper) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<TagDto>))]
 	[ProducesResponseType(400)]
-	public async Task<IActionResult> Get()
+	public async Task<IActionResult> GetAllAsync()
 	{
-		var tags = mapper.Map<List<TagDto>>(await repository.GetAll());
+		var tags = mapper.Map<List<TagDto>>(await repository.GetAllAsync());
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -25,27 +26,40 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 	[HttpGet("id/{id}")]
 	[ProducesResponseType(200, Type = typeof(TagDto))]
 	[ProducesResponseType(400)]
-	public async Task<IActionResult> Get(Guid id)
+	public async Task<IActionResult> GetAsync(Guid id)
 	{
-		var tag = mapper.Map<TagDto>(await repository.Get(id));
+		var tag = mapper.Map<TagDto>(await repository.GetAsync(id));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
 		}
 		return Ok(tag);
 	}
-	[HttpGet("by-book/{bookId}")]
+	[HttpGet("find/{query}")]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<TagDto>))]
 	[ProducesResponseType(400)]
-	public async Task<IActionResult> GetByTagID(Guid bookId)
+	public async Task<IActionResult> FindAsync(string query)
 	{
-		var tags = mapper.Map<List<TagDto>>(await repository.GetByBookId(bookId));
+		var tags = mapper.Map<List<TagDto>>(await repository.GetAsync(query));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
 		}
 		return Ok(tags);
 	}
+	[HttpGet("by-book/{bookId}")]
+	[ProducesResponseType(200, Type = typeof(IEnumerable<TagDto>))]
+	[ProducesResponseType(400)]
+	public async Task<IActionResult> GetByBookID(Guid bookId)
+	{
+		var tags = mapper.Map<List<TagDto>>(await repository.GetByBookIdAsync(bookId));
+		if (!ModelState.IsValid)
+		{
+			return BadRequest(ModelState);
+		}
+		return Ok(tags);
+	}
+	
 	[HttpPost]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
@@ -55,9 +69,18 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 		{
 			return BadRequest(ModelState);
 		}
-		var tagMap = mapper.Map<Tag>(tagCreate);
-		var isCreated = await repository.Create(tagMap);
-		if (!isCreated)
+		Tag tagMap = mapper.Map<Tag>(tagCreate);
+
+		try
+		{
+			tagService.HandleName(tagMap);
+			await repository.CreateAsync(tagMap);
+		}
+		catch (ArgumentException ex)
+		{
+			ModelState.AddModelError("", ex.Message);
+		}
+		catch
 		{
 			ModelState.AddModelError("", "Error while saving");
 			return StatusCode(500, ModelState);
@@ -78,7 +101,7 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 		{
 			return BadRequest(ModelState);
 		}
-		if (!await repository.Exists(tagId))
+		if (!await repository.ExistsAsync(tagId))
 		{
 			return NotFound();
 		}
@@ -87,7 +110,16 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 			return BadRequest(ModelState);
 		}
 		var tagMap = mapper.Map<Tag>(tagUpdate);
-		if (!await repository.Update(tagMap))
+		try
+		{
+			tagService.HandleName(tagMap);
+			await repository.UpdateAsync(tagMap);
+		}
+		catch (ArgumentException ex)
+		{
+			ModelState.AddModelError("", ex.Message);
+		}
+		catch
 		{
 			ModelState.AddModelError("", "Error while updating");
 			return StatusCode(500, ModelState);
@@ -98,7 +130,7 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 	[HttpDelete("{tagId}")]
 	public async Task<IActionResult> Delete(Guid tagId)
 	{
-		if (!await repository.Exists(tagId))
+		if (!await repository.ExistsAsync(tagId))
 		{
 			return NotFound();
 		}
@@ -108,7 +140,7 @@ public class TagController(ITagRepository repository, IMapper mapper) : Controll
 		}
 		try
 		{
-			await repository.Delete(tagId);
+			await repository.DeleteAsync(tagId);
 			return NoContent();
 		}
 		catch (ArgumentException ex)
