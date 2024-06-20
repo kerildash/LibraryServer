@@ -160,8 +160,8 @@ public class Program
 	{
 		builder.Services.AddScoped<IBookRepository, BookRepository>();
 		builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
-		builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
-		builder.Services.AddScoped<IPictureRepository, PictureRepository>();
+		builder.Services.AddScoped<IStaticFileRepository<Document>, DocumentRepository>();
+		builder.Services.AddScoped<IStaticFileRepository<Picture>, PictureRepository>();
 		builder.Services.AddScoped<ITagRepository, TagRepository>();
 	}
 	private static void AddServices(WebApplicationBuilder builder)
