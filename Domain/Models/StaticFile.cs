@@ -6,9 +6,9 @@
 public class StaticFile
 {
 	public Guid Id { get; set; }
-	public required string Path { get; set; }
+	public string Path { get; set; }
 	public Guid? HolderId { get; set; }
-
+	
 	public string GetName()
 	{
 		return System.IO.Path.GetFileName(Path);
