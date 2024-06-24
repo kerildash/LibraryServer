@@ -1,4 +1,4 @@
-﻿using Api.Services;
+﻿using Api.Services.Interfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +17,7 @@ public class AccountController(
 	: Controller
 {
 	[HttpPost("register")]
-	public async Task<IActionResult> Register([FromBody] RegisterDto register)
+	public async Task<IActionResult> RegisterAsync([FromBody] RegisterDto register)
 	{
 		//populating the db with roles
 		//could be in seed data?
@@ -57,7 +57,7 @@ public class AccountController(
 	}
 
 	[HttpPost("login")]
-	public async Task<IActionResult> Login(
+	public async Task<IActionResult> LoginAsync(
 		[FromBody] LoginDto login)
 	{
 		if (!ModelState.IsValid)
@@ -85,7 +85,7 @@ public class AccountController(
 	}
 	[HttpPost("logoff")]
 	
-	public async Task<IActionResult> LogOff()
+	public async Task<IActionResult> LogOffAsync()
 	{
 		if (signInManager.IsSignedIn(User))
 		{

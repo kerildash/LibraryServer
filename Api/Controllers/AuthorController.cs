@@ -15,10 +15,10 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[HttpGet]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
-	[Authorize(Roles="User", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-	public async Task<IActionResult> Get()
+	[Authorize(Roles = "User", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+	public async Task<IActionResult> GetAllAsync()
 	{
-		var authors = mapper.Map<List<AuthorDto>>(await repository.GetAll());
+		var authors = mapper.Map<List<AuthorDto>>(await repository.GetAllAsync());
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -30,9 +30,9 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User")]
 
-	public async Task<IActionResult> Get(Guid id)
+	public async Task<IActionResult> GetAsync(Guid id)
 	{
-		var author = mapper.Map<AuthorDto>(await repository.Get(id));
+		var author = mapper.Map<AuthorDto>(await repository.GetAsync(id));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -43,9 +43,9 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User")]
-	public async Task<IActionResult> GetByAuthorID(Guid bookId)
+	public async Task<IActionResult> GetByBookIdAsync(Guid bookId)
 	{
-		var authors = mapper.Map<List<AuthorDto>>(await repository.GetByBookId(bookId));
+		var authors = mapper.Map<List<AuthorDto>>(await repository.GetByBookIdAsync(bookId));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -57,15 +57,18 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "Admin")]
-	public async Task<IActionResult> Create([FromBody] AuthorDto authorCreate)
+	public async Task<IActionResult> CreateAsync([FromBody] AuthorDto authorCreate)
 	{
 		if (authorCreate is null)
 		{
 			return BadRequest(ModelState);
 		}
 		var authorMap = mapper.Map<Author>(authorCreate);
-		var isCreated = await repository.Create(authorMap);
-		if (!isCreated)
+		try
+		{
+			await repository.CreateAsync(authorMap);
+		}
+		catch
 		{
 			ModelState.AddModelError("", "Error while saving");
 			return StatusCode(500, ModelState);
@@ -78,7 +81,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[ProducesResponseType(400)]
 	[ProducesResponseType(404)]
 	[Authorize(Roles = "Admin")]
-	public async Task<IActionResult> Update(Guid authorId, [FromBody] AuthorDto authorUpdate)
+	public async Task<IActionResult> UpdateAsync(Guid authorId, [FromBody] AuthorDto authorUpdate)
 	{
 		if (authorUpdate is null)
 		{
@@ -88,7 +91,7 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 		{
 			return BadRequest(ModelState);
 		}
-		if (!await repository.Exists(authorId))
+		if (!await repository.ExistsAsync(authorId))
 		{
 			return NotFound();
 		}
@@ -97,7 +100,11 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 			return BadRequest(ModelState);
 		}
 		var authorMap = mapper.Map<Author>(authorUpdate);
-		if (!await repository.Update(authorMap))
+		try
+		{
+			await repository.UpdateAsync(authorMap);
+		}
+		catch
 		{
 			ModelState.AddModelError("", "Error while updating");
 			return StatusCode(500, ModelState);
@@ -107,19 +114,15 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 
 	[HttpDelete("{authorId}")]
 	[Authorize(Roles = "Admin")]
-	public async Task<IActionResult> Delete(Guid authorId)
+	public async Task<IActionResult> DeleteAsync(Guid authorId)
 	{
-		if (!await repository.Exists(authorId))
-		{
-			return NotFound();
-		}
 		if (!ModelState.IsValid)
 		{
 			return BadRequest();
 		}
 		try
 		{
-			await repository.Delete(authorId);
+			await repository.DeleteAsync(authorId);
 			return NoContent();
 		}
 		catch (ArgumentException ex)
