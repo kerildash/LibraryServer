@@ -12,6 +12,7 @@ using System.Text;
 using Api.Services;
 using Microsoft.OpenApi.Models;
 using Api.Services.Interfaces;
+using Database.Services;
 
 namespace Api;
 
@@ -167,6 +168,12 @@ public class Program
 	private static void AddServices(WebApplicationBuilder builder)
 	{
 		builder.Services.AddScoped<ITokenService, TokenService>();
+		builder.Services.AddScoped<ISearchService<Book>, SearchService<Book>>();
+		builder.Services.AddScoped<ISearchService<Author>, SearchService<Author>>();
+		builder.Services.AddScoped<ISearchService<Tag>, SearchService<Tag>>();
+		builder.Services.AddScoped<ISearchService<Picture>, SearchService<Picture>>();
+		builder.Services.AddScoped<ISearchService<Document>, SearchService<Document>>();
+
 		builder.Services.AddScoped<IStaticFileService<Document>, StaticFileService<Document>>();
 		builder.Services.AddScoped<IStaticFileService<Picture>, StaticFileService<Picture>>();
 	}
