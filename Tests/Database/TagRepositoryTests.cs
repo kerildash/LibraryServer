@@ -1,13 +1,11 @@
-﻿using Azure;
-using Database;
+﻿using Database;
 using Database.Repositories;
 using Database.Services;
 using Domain.Models;
 using FluentAssertions;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using Xunit;
+using Moq;
+
 namespace Tests.Database;
 
 public class TagRepositoryTests
@@ -16,11 +14,11 @@ public class TagRepositoryTests
 
 	public TagRepositoryTests()
 	{
-		DbContextOptionsBuilder<DataContext> contextOptions = 
+		DbContextOptionsBuilder<DataContext> options =
 			new DbContextOptionsBuilder<DataContext>()
 				.UseInMemoryDatabase(Guid.NewGuid().ToString());
 
-		context = new DataContext(contextOptions.Options);
+		context = new DataContext(options.Options);
 	}
 
 	#region ExistAsync
@@ -51,7 +49,7 @@ public class TagRepositoryTests
 		isExist.Should().BeFalse();
 	}
 
-	#endregion 
+	#endregion
 
 	#region GetAsync(Guid id)
 
@@ -118,11 +116,33 @@ public class TagRepositoryTests
 
 	#endregion
 
+	#region GetAsync(string)
+	[Fact]
+	public async Task GetAsync__ReturnsCollectionOfTags()
+	{
+		Mock<ISearchService<Tag>> search = new();
+		ICollection<Tag> tags = [
+			new Tag { Name = "Test" },
+			new Tag { Name = "Test2" }
+			];
+		search.Setup(s => s.FindAsync(It.IsAny<string>())).ReturnsAsync(tags);
+
+		TagRepository repo = new(context, search.Object);
+
+		ICollection<Tag> result = await repo.GetAsync("string");
+		result.Should().NotBeNull();
+		result.Should().HaveCount(2);
+		result.Should().BeSameAs(tags);
+	}
+
+	#endregion
+
 	#region GetByBookIdAsync
+	[Fact]
 	public async Task GetByBookIdAsync_3Tags2WithBookId_Returns2TagsByBookId()
 	{
 		TagRepository repo = new(context, new SearchService<Tag>());
-		Book book1 = new Book { Title = "Book1", Description = "Book1", Document = null};
+		Book book1 = new Book { Title = "Book1", Description = "Book1", Document = null };
 		Book book2 = new Book { Title = "Book2", Description = "Book2", Document = null };
 		Book book3 = new Book { Title = "Book3", Description = "Book3", Document = null };
 		Tag tag1 = new Tag { Name = "Tag1" };
@@ -155,7 +175,7 @@ public class TagRepositoryTests
 
 	}
 	[Fact]
-	public async Task GetByBookIdAsync_3TagsWithBookId_ReturnsEmptyCollection()
+	public async Task GetByBookIdAsync_3Tags0WithBookId_ReturnsEmptyCollection()
 	{
 		TagRepository repo = new(context, new SearchService<Tag>());
 		Book book1 = new Book { Title = "Book1", Description = "Book1", Document = null };
@@ -268,7 +288,7 @@ public class TagRepositoryTests
 
 		Guid newGuid = Guid.NewGuid();
 		Func<Task> action = async () => await repo.DeleteAsync(newGuid);
-		
+
 		action.Should().ThrowAsync<ArgumentException>()
 			.WithMessage($"Tag ID: \"{newGuid}\" does not exist");
 		List<Tag> tags = context.Tags.ToList();
