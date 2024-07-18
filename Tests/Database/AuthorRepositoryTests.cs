@@ -150,16 +150,9 @@ public class AuthorRepositoryTests
 		BookAuthor book3Author2 = new BookAuthor { Book = book3, Author = author2, BookId = book3.Id, AuthorId = author2.Id };
 
 
-		context.Add(book1);
-		context.Add(book2);
-		context.Add(book3);
-		context.Add(author1);
-		context.Add(author2);
-		context.Add(author3);
-		context.Add(book1Author1);
-		context.Add(book2Author3);
-		context.Add(book3Author1);
-		context.Add(book3Author2);
+		context.AddRange([book1, book2, book3]);
+		context.AddRange([author1, author2, author3]);
+		context.AddRange([book1Author1, book2Author3, book3Author1, book3Author2]);
 
 		context.SaveChanges();
 
