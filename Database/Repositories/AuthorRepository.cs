@@ -20,12 +20,12 @@ public class AuthorRepository(DataContext context, ISearchService<Author> search
 		}
 		return await context.Authors.FirstAsync(a => a.Id == id);
 	}
-	public async Task<ICollection<Author>> GetAllAsync()
+	public async Task<ICollection<Author>> GetAllAsync(int pageNumber, int pageSize)
 	{
-		return await context.Authors.ToListAsync();
+		return await context.Authors.Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
 	}
 	
-	public async Task<ICollection<Author>> GetAsync(string query)
+	public async Task<ICollection<Author>> GetAsync(string query, int pageNumber, int pageSize)
 	{
 		return await search.FindAsync(query);
 	}

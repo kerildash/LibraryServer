@@ -27,9 +27,11 @@ public class BookRepository(DataContext context, ISearchService<Book> search) : 
 			.FirstOrDefaultAsync(b => b.Id == id)
 			?? throw new NullReferenceException();
 	}
-	public async Task<ICollection<Book>> GetAllAsync()
+	public async Task<ICollection<Book>> GetAllAsync(int pageNumber, int pageSize)
 	{
 		var books = await context.Books
+			.Skip(pageNumber * pageSize)
+			.Take(pageSize)
 			.Include(b => b.Cover)
 			.Include(b => b.Document)
 			.Include(b => b.BookAuthors)
@@ -39,7 +41,7 @@ public class BookRepository(DataContext context, ISearchService<Book> search) : 
 			.ToListAsync();
 		return books;
 	}
-	public async Task<ICollection<Book>> GetAsync(string query)
+	public async Task<ICollection<Book>> GetAsync(string query, int pageNumber, int pageSize)
 	{
 		return await search.FindAsync(query);
 	}
@@ -69,7 +71,7 @@ public class BookRepository(DataContext context, ISearchService<Book> search) : 
 			.ThenInclude(ba => ba.Tag)
 			.ToListAsync();
 	}
-
+	//
 	public async Task CreateAsync(List<Guid?> authorIds, Book book)
 	{
 		try
@@ -126,6 +128,7 @@ public class BookRepository(DataContext context, ISearchService<Book> search) : 
 	{
 		await context.SaveChangesAsync();
 	}
+	//
 	public async Task AddBookAuthorAsync(Guid bookId, Guid authorId)
 	{
 		try
@@ -170,7 +173,7 @@ public class BookRepository(DataContext context, ISearchService<Book> search) : 
 			throw;
 		}
 	}
-	
+	//
 	private async Task AddBookAuthorAsync(Book book, Author author)
 	{
 		if (await BookAuthorExistsAsync(book.Id, author.Id))

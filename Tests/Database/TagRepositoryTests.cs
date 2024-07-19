@@ -94,7 +94,7 @@ public class TagRepositoryTests
 		context.Tags.Add(tag3);
 		context.SaveChanges(true);
 
-		ICollection<Tag> tags = await repo.GetAllAsync();
+		ICollection<Tag> tags = await repo.GetAllAsync(pageNumber: 0, pageSize: 10);
 
 		tags.Should().NotBeNullOrEmpty();
 		tags.Should().HaveCount(3);
@@ -108,7 +108,7 @@ public class TagRepositoryTests
 	{
 		TagRepository repo = new(context, new SearchService<Tag>());
 
-		ICollection<Tag> tags = await repo.GetAllAsync();
+		ICollection<Tag> tags = await repo.GetAllAsync(pageNumber: 0, pageSize: 10);
 
 		tags.Should().NotBeNull();
 		tags.Should().BeEmpty();
@@ -129,7 +129,7 @@ public class TagRepositoryTests
 
 		TagRepository repo = new(context, search.Object);
 
-		ICollection<Tag> result = await repo.GetAsync("string");
+		ICollection<Tag> result = await repo.GetAsync("string", pageNumber: 0, pageSize: 10);
 		result.Should().NotBeNull();
 		result.Should().HaveCount(2);
 		result.Should().BeSameAs(tags);

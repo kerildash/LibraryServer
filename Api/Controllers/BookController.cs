@@ -16,9 +16,9 @@ public class BookController(IBookRepository repository, IMapper mapper) : Contro
 	[ProducesResponseType(200, Type = typeof(IEnumerable<BookDto>))]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-	public async Task<IActionResult> GetAllAsync()
+	public async Task<IActionResult> GetAllAsync(int pageNumber = 0, int pageSize = 12)
 	{
-		var books = mapper.Map<List<BookDto>>(await repository.GetAllAsync());
+		var books = mapper.Map<List<BookDto>>(await repository.GetAllAsync(pageNumber, pageSize));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);

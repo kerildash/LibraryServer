@@ -16,9 +16,9 @@ public class AuthorController(IAuthorRepository repository, IMapper mapper) : Co
 	[ProducesResponseType(200, Type = typeof(IEnumerable<AuthorDto>))]
 	[ProducesResponseType(400)]
 	[Authorize(Roles = "User", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-	public async Task<IActionResult> GetAllAsync()
+	public async Task<IActionResult> GetAllAsync(int pageNumber = 0, int pageSize = 12)
 	{
-		var authors = mapper.Map<List<AuthorDto>>(await repository.GetAllAsync());
+		var authors = mapper.Map<List<AuthorDto>>(await repository.GetAllAsync(pageNumber, pageSize));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);

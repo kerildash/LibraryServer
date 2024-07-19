@@ -20,11 +20,11 @@ public class TagRepository(DataContext context, ISearchService<Tag> search) : IT
 		}
 		return await context.Tags.FirstAsync(a => a.Id == id);
 	}
-	public async Task<ICollection<Tag>> GetAllAsync()
+	public async Task<ICollection<Tag>> GetAllAsync(int pageNumber, int pageSize)
 	{
-		return await context.Tags.ToListAsync();
+		return await context.Tags.Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
 	}
-	public async Task<ICollection<Tag>> GetAsync(string query)
+	public async Task<ICollection<Tag>> GetAsync(string query, int pageNumber, int pageSize)
 	{
 		return await search.FindAsync(query);
 	}

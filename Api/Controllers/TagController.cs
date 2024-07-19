@@ -14,9 +14,9 @@ public class TagController(ITagRepository repository, ITagService tagService, IM
 	[HttpGet]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<TagDto>))]
 	[ProducesResponseType(400)]
-	public async Task<IActionResult> GetAllAsync()
+	public async Task<IActionResult> GetAllAsync(int pageNumber = 0, int pageSize = 12)
 	{
-		var tags = mapper.Map<List<TagDto>>(await repository.GetAllAsync());
+		var tags = mapper.Map<List<TagDto>>(await repository.GetAllAsync(pageNumber, pageSize));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);
@@ -38,9 +38,9 @@ public class TagController(ITagRepository repository, ITagService tagService, IM
 	[HttpGet("find/{query}")]
 	[ProducesResponseType(200, Type = typeof(IEnumerable<TagDto>))]
 	[ProducesResponseType(400)]
-	public async Task<IActionResult> FindAsync(string query)
+	public async Task<IActionResult> FindAsync(string query, int pageNumber = 0, int pageSize = 12)
 	{
-		var tags = mapper.Map<List<TagDto>>(await repository.GetAsync(query));
+		var tags = mapper.Map<List<TagDto>>(await repository.GetAsync(query, pageNumber, pageSize));
 		if (!ModelState.IsValid)
 		{
 			return BadRequest(ModelState);

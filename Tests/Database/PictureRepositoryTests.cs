@@ -91,7 +91,7 @@ public class PictureRepositoryTests
 		search.Setup(s => s.FindAsync(It.IsAny<string>())).ReturnsAsync(list);
 		PictureRepository repo = new(context, search.Object);
 
-		ICollection<Picture> result = await repo.GetAsync("string");
+		ICollection<Picture> result = await repo.GetAsync("string", pageNumber: 0, pageSize: 10);
 
 		result.Should().NotBeNull();
 		result.Should().HaveCount(2);
@@ -109,7 +109,7 @@ public class PictureRepositoryTests
 		context.Pictures.AddRange([picture1, picture2]);
 		context.SaveChanges();
 
-		ICollection<Picture> pictures = await repo.GetAllAsync();
+		ICollection<Picture> pictures = await repo.GetAllAsync(pageNumber: 0, pageSize: 10);
 
 		pictures.Should().NotBeNullOrEmpty();
 		pictures.Should().HaveCount(2);
@@ -123,7 +123,7 @@ public class PictureRepositoryTests
 		PictureRepository repo = new(context, null);
 		context.SaveChanges();
 
-		ICollection<Picture> pictures = await repo.GetAllAsync();
+		ICollection<Picture> pictures = await repo.GetAllAsync(pageNumber: 0, pageSize: 10);
 
 		pictures.Should().BeEmpty();
 	}

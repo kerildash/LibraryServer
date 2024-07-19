@@ -23,13 +23,13 @@ public abstract class StaticFileRepository<T>
 		return await AccessTable().FirstAsync(d => d.Id == id);
 	}
 
-	public async Task<ICollection<T>> GetAsync(string query)
+	public async Task<ICollection<T>> GetAsync(string query, int pageNumber, int pageSize)
 	{
 		return await search.FindAsync(query);
 	}
-	public async Task<ICollection<T>> GetAllAsync()
+	public async Task<ICollection<T>> GetAllAsync(int pageNumber, int pageSize)
 	{
-		return await AccessTable().ToListAsync();
+		return await AccessTable().Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
 	}
 	public async Task<ICollection<T>> GetByHolderIdAsync(Guid HolderId)
 	{

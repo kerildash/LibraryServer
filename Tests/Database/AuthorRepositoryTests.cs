@@ -74,7 +74,7 @@ public class AuthorRepositoryTests
 
 		Func<Task> action = async () => await repo.GetAsync(Guid.NewGuid());
 
-		action.Should().ThrowAsync<ArgumentException>();
+		await action.Should().ThrowAsync<ArgumentException>();
 	}
 
 	#endregion
@@ -90,7 +90,7 @@ public class AuthorRepositoryTests
 		context.Authors.Add(author2);
 		context.SaveChanges();
 
-		ICollection<Author> authors = await repo.GetAllAsync();
+		ICollection<Author> authors = await repo.GetAllAsync(pageNumber: 0, pageSize: 10); 
 
 		authors.Should().NotBeNullOrEmpty();
 		authors.Should().HaveCount(2);
@@ -104,7 +104,7 @@ public class AuthorRepositoryTests
 		AuthorRepository repo = new(context, null);
 		context.SaveChanges();
 
-		ICollection<Author> authors = await repo.GetAllAsync();
+		ICollection<Author> authors = await repo.GetAllAsync(pageNumber: 0, pageSize: 10);
 
 		authors.Should().BeEmpty();
 	}
@@ -126,7 +126,7 @@ public class AuthorRepositoryTests
 
 		search.Setup(s => s.FindAsync(It.IsAny<string>())).ReturnsAsync(authors);
 
-		ICollection<Author> result = await repo.GetAsync("query");
+		ICollection<Author> result = await repo.GetAsync("query", pageNumber: 0, pageSize: 10);
 		result.Should().NotBeNull();
 		result.Should().HaveCount(2);
 		result.Should().BeSameAs(authors);
@@ -271,13 +271,13 @@ public class AuthorRepositoryTests
 		AuthorRepository repo = new(context, new SearchService<Author>());
 
 		Author author = new Author { Name = "Test", Bio = "Test" };
-		context.Authors.Add(author);
-		context.SaveChanges();
+		await context.Authors.AddAsync(author);
+		await context.SaveChangesAsync();
 
 		Guid newGuid = Guid.NewGuid();
 		Func<Task> action = async () => await repo.DeleteAsync(newGuid);
 
-		action.Should().ThrowAsync<ArgumentException>();
+		await action.Should().ThrowAsync<ArgumentException>();
 		List<Author> authors = context.Authors.ToList();
 		authors.Should().NotBeNullOrEmpty();
 		authors.Should().HaveCount(1);
@@ -297,7 +297,7 @@ public class AuthorRepositoryTests
 
 		Func<Task> action = async () => await repo.DeleteAsync(author.Id);
 
-		action.Should().ThrowAsync<InvalidOperationException>();
+		await action.Should().ThrowAsync<InvalidOperationException>();
 		List<Author> authors = context.Authors.ToList();
 		authors.Should().NotBeNullOrEmpty();
 		authors.Should().HaveCount(1);
